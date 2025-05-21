@@ -3,7 +3,7 @@
 
 uint8_t broadcastAddress[] = {0x8C, 0xBF, 0xEA, 0xCC, 0x9C, 0x04}; // Adresse MAC du récepteur
 unsigned long lastMicros = 0;
-const unsigned long interval = 10000; // 10 ms = 10000 µs
+const unsigned long interval = 2000; // en µs 
 
 typedef struct struct_message { // Constitution de la trame d'envoi
     int id; // Identifiant 

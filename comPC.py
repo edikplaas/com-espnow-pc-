@@ -1,22 +1,43 @@
 import serial
+from datetime import datetime
 
 def read_serial(port="COM8", baudrate=2000000, timeout=1):
     try:
         # Configure le port série
         ser = serial.Serial(port, baudrate, timeout=timeout)
         print(f"Connexion établie sur {port} à {baudrate} bauds")
+
+        last_time = None  # Variable pour stocker l'heure du dernier message reçu
+        message_count = 0  # Compteur de messages
+        total_time_elapsed = 0  # Temps total écoulé entre les messages
+
         while True:
             if ser.in_waiting > 0:
                 # Lis les données disponibles sur le port série
                 line = ser.readline().decode('utf-8').strip()
-                lineTab = line.split() # Transforme la ligne lue en un tableau qui regroupe l'ID, et les données
-                
-                tabAffiche = ["ID : ",lineTab[0]," Data : "] # Préparation pour l'affichage
-                for i in range(len(lineTab)-1): # Pour chaque donnée (en excluant l'ID)
-                    tabAffiche.append(lineTab[i+1]) # Ajout de la donnée dans le tableau d'affichage
+                lineTab = line.split()  # Transforme la ligne lue en un tableau qui regroupe l'ID, et les données
+
+                current_time = datetime.now()  # Heure actuelle
+
+                if last_time is not None:
+                    # Calculer le temps écoulé depuis le dernier message
+                    time_elapsed = (current_time - last_time).total_seconds()
+                    total_time_elapsed += time_elapsed
+                    message_count += 1
+
+                    # Calculer et afficher la fréquence de réception
+                    if message_count > 1:  # On attend au moins deux messages pour calculer la fréquence
+                        frequency = (message_count - 1) / total_time_elapsed
+                        print(f"Fréquence de réception : {frequency:.2f} Hz")
+
+                last_time = current_time  # Mettre à jour l'heure du dernier message
+
+                tabAffiche = ["ID : ", lineTab[0], " Data : "]  # Préparation pour l'affichage
+                for i in range(len(lineTab)-1):  # Pour chaque donnée (en excluant l'ID)
+                    tabAffiche.append(lineTab[i+1])  # Ajout de la donnée dans le tableau d'affichage
                     tabAffiche.append(" ")
-                print("".join(map(str, tabAffiche))) # Affichage correct de toute la data
-                
+                print("".join(map(str, tabAffiche)))  # Affichage correct de toute la data
+
     except serial.SerialException as e:
         print(f"Erreur avec le port série : {e}")
 
