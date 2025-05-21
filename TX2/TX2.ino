@@ -42,5 +42,4 @@ void loop() {
   if (nb>500){
     nb=0;
   }
-  delay(500);
 }
