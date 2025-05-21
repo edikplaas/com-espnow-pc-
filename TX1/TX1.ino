@@ -2,6 +2,8 @@
 #include <WiFi.h>
 
 uint8_t broadcastAddress[] = {0x8C, 0xBF, 0xEA, 0xCC, 0x9C, 0x04}; // Adresse MAC du récepteur
+unsigned long lastMicros = 0;
+const unsigned long interval = 10000; // 10 ms = 10000 µs
 
 typedef struct struct_message { // Constitution de la trame d'envoi
     int id; // Identifiant 
@@ -32,14 +34,18 @@ void setup() {
 }
  
 void loop() {
+  unsigned long newTime = micros();
   static int nb = 0;
-  myData.id = 1;
-  myData.x = nb;
-  myData.y = 500 - nb;
-  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
-  // result permet de vérifier le bon envoi des données
-  nb++;
-  if (nb>500){
-    nb=0;
+  if (newTime - lastMicros >= interval) {
+    lastMicros += interval;
+    myData.id = 1;
+    myData.x = nb;
+    myData.y = 500 - nb;
+    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
+    // result permet de vérifier le bon envoi des données
+    nb++;
+    if (nb>500){
+      nb=0;
+    }
   }
 }
