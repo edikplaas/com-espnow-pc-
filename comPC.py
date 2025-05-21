@@ -1,5 +1,10 @@
 import serial
 from datetime import datetime
+import struct
+
+# Définir la structure des données attendues
+data_format = 'B' + 'h' * 49  # 1 octet pour l'ID et 49 entiers de 2 octets pour les blocs
+data_size = struct.calcsize(data_format)
 
 def read_serial(port="COM8", baudrate=2000000, timeout=1):
     try:
@@ -12,10 +17,12 @@ def read_serial(port="COM8", baudrate=2000000, timeout=1):
         total_time_elapsed = 0  # Temps total écoulé entre les messages
 
         while True:
-            if ser.in_waiting > 0:
-                # Lis les données disponibles sur le port série
-                line = ser.readline().decode('utf-8').strip()
-                lineTab = line.split()  # Transforme la ligne lue en un tableau qui regroupe l'ID, et les données
+            if ser.in_waiting >= data_size:
+                # Lis les données binaires disponibles sur le port série
+                binary_data = ser.read(data_size)
+
+                # Dépaqueter les données binaires selon la structure définie
+                unpacked_data = struct.unpack(data_format, binary_data)
 
                 current_time = datetime.now()  # Heure actuelle
 
@@ -32,11 +39,12 @@ def read_serial(port="COM8", baudrate=2000000, timeout=1):
 
                 last_time = current_time  # Mettre à jour l'heure du dernier message
 
-                tabAffiche = ["ID : ", lineTab[0], " Data : "]  # Préparation pour l'affichage
-                for i in range(len(lineTab)-1):  # Pour chaque donnée (en excluant l'ID)
-                    tabAffiche.append(lineTab[i+1])  # Ajout de la donnée dans le tableau d'affichage
+                # Afficher les données reçues
+                tabAffiche = ["ID : ", str(unpacked_data[0]), " Data : "]
+                for i in range(1, len(unpacked_data)):
+                    tabAffiche.append(str(unpacked_data[i]))
                     tabAffiche.append(" ")
-                print("".join(map(str, tabAffiche)))  # Affichage correct de toute la data
+                print("".join(tabAffiche))  # Affichage correct de toute la data
 
     except serial.SerialException as e:
         print(f"Erreur avec le port série : {e}")
