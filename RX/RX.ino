@@ -2,6 +2,8 @@
 #include <WiFi.h>
 
 typedef struct struct_message {
+    uint8_t entete1;
+    uint8_t entete2;
     uint8_t bytes[30];
 } struct_message;
 

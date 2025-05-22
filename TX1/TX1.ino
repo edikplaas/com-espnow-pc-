@@ -6,6 +6,8 @@ unsigned long lastMicros = 0;
 const unsigned long interval = 2000; // en µs, 2000µs correspond à 500Hz, 10000µs correspond à 100Hz
 
 typedef struct struct_message {
+  uint8_t entete1;
+  uint8_t entete2;
   uint8_t bytes[30];
 
 } struct_message;
@@ -31,6 +33,8 @@ void setup() {
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     return;
   }
+  myData.entete1 = 99;
+  myData.entete2 = 101;
 }
 
 void loop() {
@@ -41,7 +45,6 @@ void loop() {
     for (int i = 0; i < 30; i++) {
       myData.bytes[i] = nb;
     }
-    myData.bytes[0] = 200;
     esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
     // result permet de vérifier le bon envoi des données
     nb++;
