@@ -2,56 +2,7 @@
 #include <WiFi.h>
 
 typedef struct struct_message {
-    uint8_t id; // Identifiant, false pour une semelle et true pour l'autre
-    uint16_t bloc1; // 2 octets
-    uint16_t bloc2; // 2 octets
-    uint16_t bloc3; // 2 octets
-    uint16_t bloc4; // 2 octets
-    uint16_t bloc5; // 2 octets
-    uint16_t bloc6; // 2 octets
-    uint16_t bloc7; // 2 octets
-    uint16_t bloc8; // 2 octets
-    uint16_t bloc9; // 2 octets
-    uint16_t bloc10; // 2 octets
-    uint16_t bloc11; // 2 octets
-    uint16_t bloc12; // 2 octets
-    uint16_t bloc13; // 2 octets
-    uint16_t bloc14; // 2 octets
-    uint16_t bloc15; // 2 octets
-    uint16_t bloc16; // 2 octets
-    uint16_t bloc17; // 2 octets
-    uint16_t bloc18; // 2 octets
-    uint16_t bloc19; // 2 octets
-    uint16_t bloc20; // 2 octets
-    uint16_t bloc21; // 2 octets
-    uint16_t bloc22; // 2 octets
-    uint16_t bloc23; // 2 octets
-    uint16_t bloc24; // 2 octets
-    uint16_t bloc25; // 2 octets
-    uint16_t bloc26; // 2 octets
-    uint16_t bloc27; // 2 octets
-    uint16_t bloc28; // 2 octets
-    uint16_t bloc29; // 2 octets
-    uint16_t bloc30; // 2 octets
-    uint16_t bloc31; // 2 octets
-    uint16_t bloc32; // 2 octets
-    uint16_t bloc33; // 2 octets
-    uint16_t bloc34; // 2 octets
-    uint16_t bloc35; // 2 octets
-    uint16_t bloc36; // 2 octets
-    uint16_t bloc37; // 2 octets
-    uint16_t bloc38; // 2 octets
-    uint16_t bloc39; // 2 octets
-    uint16_t bloc40; // 2 octets
-    uint16_t bloc41; // 2 octets
-    uint16_t bloc42; // 2 octets
-    uint16_t bloc43; // 2 octets
-    uint16_t bloc44; // 2 octets
-    uint16_t bloc45; // 2 octets
-    uint16_t bloc46; // 2 octets
-    uint16_t bloc47; // 2 octets
-    uint16_t bloc48; // 2 octets
-    uint16_t bloc49; // 2 octets
+    uint8_t bytes[30];
 } struct_message;
 
 struct_message myData;
