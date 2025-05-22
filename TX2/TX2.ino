@@ -41,7 +41,7 @@ void loop() {
     for (int i = 0; i < 30; i++) {
       myData.bytes[i] = nb;
     }
-    myData.bytes[0] = 200;
+    myData.bytes[0] = 250;
     esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
     // result permet de vérifier le bon envoi des données
     nb++;
