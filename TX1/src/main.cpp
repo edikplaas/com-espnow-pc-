@@ -1,9 +1,9 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
-uint8_t broadcastAddress[] = {0x8C, 0xBF, 0xEA, 0xCC, 0x9C, 0x04}; // Adresse MAC du récepteur
+uint8_t broadcastAddress[] = {0x8C, 0xBF, 0xEA, 0xCC, 0xA8, 0xDC}; // Adresse MAC du récepteur
 unsigned long lastMicros = 0;
-const unsigned long interval = 2000; // en µs, 2000µs correspond à 500Hz, 10000µs correspond à 100Hz
+const unsigned long interval = 3333; // en µs, 2000µs correspond à 500Hz, 10000µs correspond à 100Hz
 
 typedef struct struct_message {
   uint8_t entete1;
