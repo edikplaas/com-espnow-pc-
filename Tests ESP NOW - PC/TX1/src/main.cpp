@@ -23,7 +23,6 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 }
 
 void setup() {
-  Serial.begin(115200);
   WiFi.mode(WIFI_STA);
   if (esp_now_init() != ESP_OK) {
     return;
@@ -42,8 +41,6 @@ void setup() {
 
 void loop() {
 
-  float temperature = temperatureRead(); // Utilisation de la fonction native
-  Serial.println(temperature);
   unsigned long newTime = micros();
   unsigned long newTimeCharge = millis();
   static uint8_t nb = 0;
