@@ -1,8 +1,8 @@
 #include <SPI.h>
 #define DE_RE_PIN PB3
 
-#define ADDRESS_1 0x35  // Fixed address
-#define ADDRESS_2 0x40  // Fixed address
+#define ADDRESS_1 0x01  // Fixed address
+#define ADDRESS_2 0x03  // Fixed address
 
 #define SCL_1_PIN LL_GPIO_PIN_8 //PA8 //d9
 #define SDA_1_PIN LL_GPIO_PIN_9 //PA9 //d1

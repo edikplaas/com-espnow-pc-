@@ -21,7 +21,7 @@ void receive_data() {
     byte headers[2];
     Serial0.readBytes(headers, 2);
 
-    if (headers[0] == 0x35 && headers[1] == 0x40) { // Vérifiez l'identifiant
+    if ((headers[0] == 0x01 && headers[1] == 0x03) || (headers[0] == 0x02 && headers[1] == 0x04) || (headers[0] == 0x05 && headers[1] == 0x07) || (headers[0] == 0x06 && headers[1] == 0x08)) { // Vérifiez l'identifiant
       byte rawData[24];
       Serial0.readBytes(rawData, 24);
 
@@ -35,14 +35,11 @@ void receive_data() {
         data.acc[i] = (rawData[9 + i * 2] << 8) | rawData[10 + i * 2];
         data.gyro[i] = (rawData[15 + i * 2] << 8) | rawData[16 + i * 2];
       }
-         Serial.print(rawData[21], HEX);
-      Serial.print(" ");
-      Serial.print(rawData[22], HEX);
-      Serial.print(" ");
-      Serial.println(rawData[23], HEX);
       data.pressure = (((uint32_t)rawData[21] << 16) | ((uint32_t)rawData[22] << 8)) | rawData[23];
 
       // Affichage des données
+      Serial.print(headers[0],HEX);
+      Serial.print(headers[1],HEX);
       Serial.print(" F1: "); Serial.print(data.forces[0]);
       Serial.print(" F2: "); Serial.print(data.forces[1]);
       Serial.print(" F3: "); Serial.print(data.forces[2]);

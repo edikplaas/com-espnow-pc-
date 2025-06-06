@@ -3,7 +3,9 @@ uint8_t frame[3];
 
 void setup() {
   Serial.begin(2000000); 
-  //pinMode(DE_RE_PIN, OUTPUT); 
+  pinMode(DE_RE_PIN, OUTPUT); 
+    digitalWrite(DE_RE_PIN, HIGH);  // Mode réception initial
+
   delay(100);
 }
 

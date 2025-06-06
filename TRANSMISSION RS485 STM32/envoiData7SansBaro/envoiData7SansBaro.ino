@@ -18,7 +18,6 @@
 
 
 #define CS_acc PB1   // Chip Select or Slave Select Pin D6
-#define CS_baro PA4   // Chip Select or Slave Select Pin A3
 
 uint8_t frameCounter = 0;
 void setup() {
@@ -26,26 +25,18 @@ void setup() {
   SPI.setSCLK(SCLK_PIN);
   SPI.setMOSI(MOSI_PIN);
   SPI.setMISO(MISO_PIN);
-  pinMode(DE_RE_PIN, OUTPUT);
-  digitalWrite(DE_RE_PIN, HIGH);
+
   // Initialize SPI
   SPI.begin();
 
   pinMode(CS_acc, OUTPUT);
   digitalWrite(CS_acc, HIGH);
 
-  pinMode(CS_baro, OUTPUT);
-  digitalWrite(CS_baro, HIGH);
-
+  
   delay(100);
   //config imu
   writeRegister16(0x20, 0x40, 0x27); //acc
   writeRegister16(0x21, 0x40, 0x4B); //gyr
-
-
-  //config baro
-  writeRegister8(0x1B, 0x31); //(Normal mode, pressure enabled, temperature disabled), reg = pwr_ctrl
-  writeRegister8(0x1C, 0x00); //resolution *1, reg = OSR
 
 }
 
@@ -83,8 +74,7 @@ void read_send_data() {
   uint16_t rawGyrY = read16bitRegister(0x07); // Read Y-axis gyroscope
   uint16_t rawGyrZ = read16bitRegister(0x08); // Read Z-axis gyroscope
 
-  readMultipleRegisters(0x04, data_press, 3); //la data pressure commence a partir de ce registre
-  uint32_t pressure = ((uint32_t)data_press[2] << 16) | ((uint32_t)data_press[1] << 8) | data_press[0];
+  uint32_t pressure = 0;
 
   data[0] = (force_1 >> 8) & 0xFF;
   data[1] = force_1 & 0xFF;
@@ -124,18 +114,6 @@ void read_send_data() {
 }
 
 
-void readMultipleRegisters(uint8_t startReg, uint8_t *data, uint8_t count) {
-
-  digitalWrite(CS_baro, LOW);  // Select the BMP384
-
-  SPI.transfer(startReg | 0x80);   // Send start register address with read bit (bit 7 set to 1)
-
-  SPI.transfer(0x00);         // Send dummy byte
-  for (uint8_t i = 0; i < count; i++) {
-    data[i] = SPI.transfer(0x00);  // Read the data bytes
-  }
-  digitalWrite(CS_baro, HIGH);  // Deselect the BMP384
-}
 
 //read 2 bytes
 uint16_t read16bitRegister(uint8_t reg) {
@@ -176,21 +154,5 @@ void writeRegister16(byte address, uint16_t value1, uint16_t value2) {
   SPI.transfer16(value);
 
   digitalWrite(CS_acc, HIGH);  // Deselect the sensor
-
-}
-
-
-//write 1 byte
-void writeRegister8(byte address, uint16_t value) {
-  digitalWrite(CS_baro, LOW);  // Select the sensor
-
-  uint16_t ctrl = address & 0x7F;
-
-  // Send the register address
-  SPI.transfer(ctrl);
-
-  SPI.transfer(value);
-
-  digitalWrite(CS_baro, HIGH);  // Deselect the sensor
 
 }
