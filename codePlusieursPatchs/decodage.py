@@ -1,6 +1,6 @@
 import binascii
 # Chemin vers le fichier binaire
-file_path = '/home/eplanson/Documents/dataSemelle2.bin' # A adapter
+file_path = '/home/eplanson/dataSemelle2.bin' # A adapter
 
 # Ouvrir le fichier en mode binaire et lire son contenu
 with open(file_path, 'rb') as file:

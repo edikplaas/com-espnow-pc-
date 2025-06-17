@@ -38,11 +38,11 @@ void setup() {
 void loop() {
   byte octet = 0;
   while (octet != 100) { // Attente de la détection du top départ envoyé par le module de com
-    if (Serial.available()) { // Si des données disponibles 
+    if (Serial.available()) { // Si des données disponibles
       octet = Serial.read(); // On lit l'octet
     }
   }
-  delayMicroseconds(500+400 * (patch)); // Délai imposé pour respecter la commutation du mode transmission au mode réception, et également l'ordre d'envoi des données selon le numéro de patch (ordre 1 2 3 4)
+  delayMicroseconds(500 + 400 * (patch)); // Délai imposé pour respecter la commutation du mode transmission au mode réception, et également l'ordre d'envoi des données selon le numéro de patch (ordre 1 2 3 4)
   read_send_data(); // Lecture et envoi des données
 }
 void read_send_data() {
@@ -53,6 +53,7 @@ void read_send_data() {
 
   uint8_t data_1[2], data_2[2], data_3[2], data_4[2];
   int bytesRead_1 = I2CRead_new(0x28, data_1, data_2, data_3, data_4, sizeof(data_1));
+
 
   int bridge_data_1 = (data_1[0] << 8) | data_1[1];
   int force_1 = (bridge_data_1 & 0x3FFF);
@@ -74,14 +75,48 @@ void read_send_data() {
   uint16_t rawGyrY = read16bitRegister(0x07); // Read Y-axis gyroscope
   uint16_t rawGyrZ = read16bitRegister(0x08); // Read Z-axis gyroscope
 
-  frame[3] = (force_1 >> 8) & 0xFF; // Décomposition des octets
-  frame[4] = force_1 & 0xFF;
-  frame[5] = (force_2 >> 8) & 0xFF;
-  frame[6] = force_2 & 0xFF;
-  frame[7] = (force_3 >> 8) & 0xFF;
-  frame[8] = force_3 & 0xFF;
-  frame[9] = (force_4 >> 8) & 0xFF;
-  frame[10] = force_4 & 0xFF;
+  switch (patch) {
+    case 1:
+      frame[3] = (force_1 >> 8) & 0xFF; // Décomposition des octets
+      frame[4] = force_1 & 0xFF;
+      frame[5] = (force_3 >> 8) & 0xFF;
+      frame[6] = force_3 & 0xFF;
+      frame[7] = (force_2 >> 8) & 0xFF;
+      frame[8] = force_2 & 0xFF;
+      frame[9] = (force_4 >> 8) & 0xFF;
+      frame[10] = force_4 & 0xFF;
+      break;
+    case 2 :
+      frame[3] = (force_2 >> 8) & 0xFF; // Décomposition des octets
+      frame[4] = force_2 & 0xFF;
+      frame[5] = (force_3 >> 8) & 0xFF;
+      frame[6] = force_3 & 0xFF;
+      frame[7] = (force_1 >> 8) & 0xFF;
+      frame[8] = force_1 & 0xFF;
+      frame[9] = (force_4 >> 8) & 0xFF;
+      frame[10] = force_4 & 0xFF;
+      break;
+    case 3 :
+      frame[3] = (force_1 >> 8) & 0xFF; // Décomposition des octets
+      frame[4] = force_1 & 0xFF;
+      frame[5] = (force_3 >> 8) & 0xFF;
+      frame[6] = force_3 & 0xFF;
+      frame[7] = (force_2 >> 8) & 0xFF;
+      frame[8] = force_2 & 0xFF;
+      frame[9] = (force_4 >> 8) & 0xFF;
+      frame[10] = force_4 & 0xFF;
+      break;
+    case 4:
+      frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
+      frame[4] = force_3 & 0xFF;
+      frame[5] = (force_4 >> 8) & 0xFF;
+      frame[6] = force_4 & 0xFF;
+      frame[7] = (force_2 >> 8) & 0xFF;
+      frame[8] = force_2 & 0xFF;
+      frame[9] = (force_1 >> 8) & 0xFF;
+      frame[10] = force_1 & 0xFF;
+  }
+
 
   frame[11]  = (rawAccX >> 8) & 0xFF;
   frame[12]  = rawAccX & 0xFF;
@@ -97,7 +132,7 @@ void read_send_data() {
   frame[22] = rawGyrZ & 0xFF;
   LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_3); //DE : high, RE : low.1
   Serial.write(frame, 23);
-  Serial.flush(); 
+  Serial.flush();
   LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_3);
 }
 
