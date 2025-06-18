@@ -12,7 +12,7 @@ la fréquence de 250Hz
 uint8_t broadcastAddress[] = {0x8C, 0xBF, 0xEA, 0xCC, 0xA8, 0xDC}; // Adresse MAC du récepteur
 unsigned long lastMillisCharge = 0;
 const unsigned long intervalleCharge = 5000;    // intervalle en ms de la vérification du mode recharge (Toutes les 5 secondes, on vérifie si l'ESP est branché au PC)
-const unsigned long intervalleTopDepart = 4000; // intervalle en µs qui correspond à la période entre chaque envoi du top départ qui permet de récupèrer les 4 trames respectives des patchs
+const unsigned long intervalleTopDepart = 1000000; // intervalle en µs qui correspond à la période entre chaque envoi du top départ qui permet de récupèrer les 4 trames respectives des patchs
 // 4000 µs => 250 Hz
 
 bool modeRecharge = false; // true si l'ESP est branché au pc, false sinon
@@ -70,8 +70,8 @@ void loop()
 
     if (trameType != -1)
     {
-      byte data[21];
-      Serial0.readBytes(data, 21); // Lecture des 21 octets de data après l'entête
+      byte data[24];
+      Serial0.readBytes(data, 24); // Lecture des 21 octets de data après l'entête
   
         Serial.print(headers[0], HEX);
         Serial.print(" ");
@@ -81,15 +81,37 @@ void loop()
         int force2 = data[3] << 8 | data[4];
         int force3 = data[5] << 8 | data[6];
         int force4 = data[7] << 8 | data[8];
+        int16_t accX = data[9]<<8 | data[10];
+        int16_t accY = data[11]<<8 | data[12];
+        int16_t accZ = data[13]<<8 | data[14];
+        int16_t gyX = data[15]<<8 | data[16];
+        int16_t gyY = data[17]<<8 | data[18];
+        int16_t gyZ = data[19]<<8 | data[20];
+        
         Serial.print(force1);
         Serial.print(" ");
         Serial.print(force2);
         Serial.print(" ");
         Serial.print(force3);
         Serial.print(" ");
-        Serial.println(force4);
+        Serial.print(force4);
 
-    }
+        Serial.print(" ");
+        Serial.print(accX);
+        Serial.print(" ");
+        Serial.print(accY);
+        Serial.print(" ");
+        Serial.print(accZ);
+        Serial.print(" ");
+        Serial.print(gyX);
+        Serial.print(" ");
+        Serial.print(gyY);
+        Serial.print(" ");
+        Serial.print(gyZ);
+        uint32_t press = (data[21]<<16 | data[22]<<8) | data[23];
+        Serial.print(" ");
+        Serial.println(press);
+        }
   }
   else
   {

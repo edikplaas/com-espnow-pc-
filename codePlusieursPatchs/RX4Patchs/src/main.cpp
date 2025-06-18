@@ -23,7 +23,7 @@ void setup()
 {
   Serial.begin(2000000);
   WiFi.mode(WIFI_STA);
-
+  pinMode(D7,INPUT);
   if (esp_now_init() != ESP_OK)
   {
     Serial.println("Error initializing ESP-NOW");
@@ -37,7 +37,10 @@ void loop()
 {
   if (bufferIndex > 0) {
     // Envoyer tout le contenu du buffer via Serial
+    Serial.write(digitalRead(D7));
     Serial.write(dataBuffer, bufferIndex);
     bufferIndex = 0; // Réinitialiser le buffer après traitement
   }
+
+  
 }

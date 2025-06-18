@@ -115,14 +115,14 @@ void loop()
 
     if (trameType != -1)
     {
-      byte data[21];
-      Serial0.readBytes(data, 21); // Lecture des 21 octets de data après l'entête
+      byte data[24];
+      Serial0.readBytes(data, 24); // Lecture des 24 octets de data après l'entête
 
       // Calculer la position de la trame dans le tableau combiné
       int startPos = trameType * 23;
       combinedData.bytes[startPos] = headers[0]; // Stockage des entêtes
       combinedData.bytes[startPos + 1] = headers[1];
-      for (int i = 0; i < 21; i++)
+      for (int i = 0; i < 24; i++)
       { // Stockage de la data
         combinedData.bytes[startPos + 2 + i] = data[i];
       }
@@ -131,7 +131,7 @@ void loop()
       // Envoyer toutes les trames ensemble si toutes ont été reçues
       if (trameCount == 4)
       { // Si les 4 trames des patchs (1, 2, 3 et 4) reçues, alors envoi des 4 trames d'un coup
-        esp_now_send(broadcastAddress, (uint8_t *)&combinedData, 92);
+        esp_now_send(broadcastAddress, (uint8_t *)&combinedData, 104);
         trameCount = 0; // Réinitialiser le compteur après l'envoi
       }
     }

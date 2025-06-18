@@ -30,8 +30,15 @@ void setup() {
   SPI.begin();
   pinMode(CS_acc, OUTPUT);
   digitalWrite(CS_acc, HIGH);
+  pinMode(CS_baro, OUTPUT);
+  digitalWrite(CS_baro, HIGH);
+  //config imu
   writeRegister16(0x20, 0x40, 0x27); //acc
   writeRegister16(0x21, 0x40, 0x4B); //gyr
+  //config baro
+  writeRegister8(0x1B, 0x31); //(Normal mode, pressure enabled, temperature disabled), reg = pwr_ctrl
+  writeRegister8(0x1C, 0x00); //resolution *1, reg = OSR
+
   pinMode(DE_RE_PIN, OUTPUT);
   digitalWrite(DE_RE_PIN, LOW); // Mode réception activé
 }
@@ -46,12 +53,13 @@ void loop() {
   read_send_data(); // Lecture et envoi des données
 }
 void read_send_data() {
-  uint8_t frame[23];
+  uint8_t frame[26];
   frame[0] = ADDRESS_DEBUT1;
   frame[1] = ADDRESS_DEBUT2;
   frame[2] = frameCounter++;
 
   uint8_t data_1[2], data_2[2], data_3[2], data_4[2];
+  uint8_t data_press[3];
   int bytesRead_1 = I2CRead_new(0x28, data_1, data_2, data_3, data_4, sizeof(data_1));
 
 
@@ -74,6 +82,9 @@ void read_send_data() {
   uint16_t rawGyrX = read16bitRegister(0x06); // Read X-axis gyroscope
   uint16_t rawGyrY = read16bitRegister(0x07); // Read Y-axis gyroscope
   uint16_t rawGyrZ = read16bitRegister(0x08); // Read Z-axis gyroscope
+
+  readMultipleRegisters(0x04, data_press, 3); //la data pressure commence a partir de ce registre
+  uint32_t pressure = ((uint32_t)data_press[2] << 16) | ((uint32_t)data_press[1] << 8) | data_press[0];
 
   switch (patch) {
     case 1:
@@ -130,8 +141,13 @@ void read_send_data() {
   frame[20] = rawGyrY & 0xFF;
   frame[21] = (rawGyrZ >> 8) & 0xFF;
   frame[22] = rawGyrZ & 0xFF;
+
+  frame[23] = (pressure >> 16) & 0xFF;
+  frame[24] = (pressure >> 8) & 0xFF;
+  frame[25] = pressure & 0xFF;
+
   LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_3); //DE : high, RE : low.1
-  Serial.write(frame, 23);
+  Serial.write(frame, 26);
   Serial.flush();
   LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_3);
 }
