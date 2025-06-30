@@ -16,6 +16,7 @@
 
 #define CS_acc PB1   // Chip Select or Slave Select Pin D6
 #define CS_baro PA4   // Chip Select or Slave Select Pin A3
+#define CS_mag PA3
 
 uint8_t patch = 4; // Patch 1 = Talon, Patch 4 = Orteils
 uint8_t ADDRESS_DEBUT1 = 1 + 2 * (patch - 1); // Identifiant 1 dans l'entête, directement calculé à partir du numéro du patch
@@ -32,13 +33,15 @@ void setup() {
   digitalWrite(CS_acc, HIGH);
   pinMode(CS_baro, OUTPUT);
   digitalWrite(CS_baro, HIGH);
+  pinMode(CS_mag, OUTPUT);
+  digitalWrite(CS_mag, HIGH);
   //config imu
   writeRegister16(0x20, 0x40, 0x27); //acc
   writeRegister16(0x21, 0x40, 0x4B); //gyr
   //config baro
   writeRegister8(0x1B, 0x31); //(Normal mode, pressure enabled, temperature disabled), reg = pwr_ctrl
   writeRegister8(0x1C, 0x00); //resolution *1, reg = OSR
-
+  initializeMMC5983MA();
   pinMode(DE_RE_PIN, OUTPUT);
   digitalWrite(DE_RE_PIN, LOW); // Mode réception activé
 }
@@ -49,11 +52,11 @@ void loop() {
       octet = Serial.read(); // On lit l'octet
     }
   }
-  delayMicroseconds(500 + 400 * (patch)); // Délai imposé pour respecter la commutation du mode transmission au mode réception, et également l'ordre d'envoi des données selon le numéro de patch (ordre 1 2 3 4)
-  read_send_data(); // Lecture et envoi des données
+  delayMicroseconds(300 + 100 * (patch)); // Délai imposé pour respecter la commutation du mode transmission au mode réception, et également l'ordre d'envoi des données selon le numéro de patch (ordre 1 2 3 4)
+  read_send_data();
 }
 void read_send_data() {
-  uint8_t frame[26];
+  uint8_t frame[33];
   frame[0] = ADDRESS_DEBUT1;
   frame[1] = ADDRESS_DEBUT2;
   frame[2] = frameCounter++;
@@ -85,6 +88,13 @@ void read_send_data() {
 
   readMultipleRegisters(0x04, data_press, 3); //la data pressure commence a partir de ce registre
   uint32_t pressure = ((uint32_t)data_press[2] << 16) | ((uint32_t)data_press[1] << 8) | data_press[0];
+  uint8_t x0 = readRegister(0x00);
+  uint8_t x1 = readRegister(0x01);
+  uint8_t y0 = readRegister(0x02);
+  uint8_t y1 = readRegister(0x03);
+  uint8_t z0 = readRegister(0x04);
+  uint8_t z1 = readRegister(0x05);
+  uint8_t xyz_ext = readRegister(0x06);
 
   switch (patch) {
     case 1:
@@ -145,9 +155,15 @@ void read_send_data() {
   frame[23] = (pressure >> 16) & 0xFF;
   frame[24] = (pressure >> 8) & 0xFF;
   frame[25] = pressure & 0xFF;
-
+  frame[26] = x0;
+  frame[27] = x1;
+  frame[28] = y0;
+  frame[29] = y1;
+  frame[30] = z0;
+  frame[31] = z1;
+  frame[32] = xyz_ext;
   LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_3); //DE : high, RE : low.1
-  Serial.write(frame, 26);
+  Serial.write(frame, 33);
   Serial.flush();
   LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_3);
 }
@@ -222,4 +238,32 @@ void writeRegister8(byte address, uint16_t value) {
 
   digitalWrite(CS_baro, HIGH);  // Deselect the sensor
 
+}
+
+
+void initializeMMC5983MA() {
+  writeRegister(0x0A, 0b00000011);  // Bande passante : 0.5ms (800Hz) → BW1=1, BW0=1
+  writeRegister(0x09, 0b00100000);  // Auto-Set activé
+  writeRegister(0x0B, 0b10011111);   //  Mode mesure continue à 1000 Hz (CM_freq=111), Set automatique tous les 75 échantillons (Prd_set=001),Bit 7 = En_prd_set, bit 3 = Cmm_en
+
+  delay(10);
+}
+
+void writeRegister(uint8_t reg, uint8_t value) {
+  //SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+  digitalWrite(CS_mag, LOW);
+  SPI.transfer((reg & 0x3F) | 0x00);  // Write: MSB = 0
+  SPI.transfer(value);
+  digitalWrite(CS_mag, HIGH);
+  //SPI.endTransaction();
+}
+
+uint8_t readRegister(uint8_t reg) {
+  //SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+  digitalWrite(CS_mag, LOW);
+  SPI.transfer((reg & 0x3F) | 0x80);  // Read: MSB = 1
+  uint8_t value = SPI.transfer(0x00);
+  digitalWrite(CS_mag, HIGH);
+  //SPI.endTransaction();
+  return value;
 }

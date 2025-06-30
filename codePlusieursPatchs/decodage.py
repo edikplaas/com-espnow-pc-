@@ -1,6 +1,6 @@
 import binascii
 # Chemin vers le fichier binaire
-file_path = '/home/eplanson/Documents/dataSemelle3.bin' # A adapter
+file_path = '/home/eplanson/Documents/dataSemelle1.bin' # A adapter
 
 # Ouvrir le fichier en mode binaire et lire son contenu
 with open(file_path, 'rb') as file:
@@ -25,31 +25,31 @@ def combine_elements(lst): # Sert à créer une liste d'octets à partir d'une l
         combined_list.append(lst[i] + lst[i + 1])
     return combined_list
 
-
 for i in range(len(hex_representation)-3):
+
     if int_list[i]==0 and int_list[i+1]==1 and int_list[i+2]==0 and int_list[i+3]==2: # On cherche une trame du patch 1
         L=[]
-        for j in range(46): # Pour tous les groupes de 4 bits
-            L.append(hex_representation[i+j]) 
-        print(combine_elements(L)) # Création du liste d'octets
+        #for j in range(66): # Pour tous les groupes de 4 bits
+         #   L.append(hex_representation[i+j]) 
+        #print(combine_elements(L)) # Création du liste d'octets
         t1+=1 # Incrémentation du compteur de trames du patch 1
     if int_list[i]==0 and int_list[i+1]==3 and int_list[i+2]==0 and int_list[i+3]==4: # On cherche une trame du patch 2
         L=[]
-        for j in range(46):
-            L.append(hex_representation[i+j])
-        print(combine_elements(L))
+        #for j in range(66):
+           # L.append(hex_representation[i+j])
+        #print(combine_elements(L))
         t2+=1
     if int_list[i]==0 and int_list[i+1]==5 and int_list[i+2]==0 and int_list[i+3]==6: # On cherche une trame du patch 3
         L=[]
-        for j in range(46):
-            L.append(hex_representation[i+j])
-        print(combine_elements(L))
+        #for j in range(66):
+           # L.append(hex_representation[i+j])
+        #print(combine_elements(L))
         t3+=1
     if int_list[i]==0 and int_list[i+1]==7 and int_list[i+2]==0 and int_list[i+3]==8: # On cherche une trame du patch 4
         L=[]
-        for j in range(46):
-            L.append(hex_representation[i+j])
-        print(combine_elements(L))
+        #for j in range(66):
+           # L.append(hex_representation[i+j])
+        #print(combine_elements(L))
         t4+=1
     
 print(t1)
