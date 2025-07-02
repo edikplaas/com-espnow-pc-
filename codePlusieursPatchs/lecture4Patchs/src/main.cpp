@@ -12,24 +12,19 @@ la fréquence de 250Hz
 const unsigned long intervalleTopDepart = 4000;                 // intervalle en µs qui correspond à la période entre chaque envoi du top départ qui permet de récupèrer les 4 trames respectives des patchs
 // 4000 µs => 250 Hz
 
-
-
-
 typedef struct struct_message
-{ // Trame unique de 23 octets de data
-  uint8_t bytes[33];
+{ // Trame unique de 36 octets de data
+  uint8_t bytes[36];
 } struct_message;
 
 typedef struct struct_combined_message
 {                    // Grosse trame combinée de 4 trames (les 4 patchs) pour l'envoi en ESP NOW
-  uint8_t bytes[132]; // 23 octets * 4 trames
+  uint8_t bytes[144]; // 36 octets * 4 trames
 } struct_combined_message;
 
 struct_combined_message combinedData;
 int trameCount = 0; // Compteur pour le nombre de trames stockées
 int16_t mx, my, mz;
-
-
 
 void envoiTopDepart() // Fonction pour l'envoi du top départ aux 4 patchs
 {
@@ -39,8 +34,8 @@ void envoiTopDepart() // Fonction pour l'envoi du top départ aux 4 patchs
   { // Envoi du top départ à 250 Hz (période 4000µs)
     oldTime = newTime;
     digitalWrite(DE_RE_PIN, HIGH); // Mode transmission
-    Serial2.write(100);            // Octet spécial pour le top départ
-    Serial2.flush();
+    Serial0.write(100);            // Octet spécial pour le top départ
+    Serial0.flush(); // SERIAL2 POUR LE PIED DROIT ET SERIAL0 POUR LE PIED GAUCHE
     digitalWrite(DE_RE_PIN, LOW); // Mode réception
   }
 }
@@ -70,25 +65,29 @@ void loop()
       trameType = 2;
     else if (headers[0] == 7 && headers[1] == 8)
       trameType = 3;
-
+    
     if (trameType != -1)
     {
-      byte data[31];
-      Serial0.readBytes(data, 31); // Lecture des 31 octets de data après l'entête
-      int startPos = trameType * 33;
+      byte data[34];
+      Serial0.readBytes(data, 34); // Lecture des 34 octets de data après l'entête
+      int startPos = trameType * 36;
       combinedData.bytes[startPos] = headers[0]; // Stockage des entêtes
       combinedData.bytes[startPos + 1] = headers[1];
-      for (int i = 0; i < 31; i++)
+      for (int i = 0; i < 34; i++)
       { // Stockage de la data
         combinedData.bytes[startPos + 2 + i] = data[i];
       }
       trameCount++;
-      if (trameCount == 4)
-      { // Si les 4 trames des patchs (1, 2, 3 et 4) reçues, alors envoi des 4 trames d'un coup
-        Serial.write(combinedData.bytes,132);
-        Serial.flush();
-        trameCount = 0; // Réinitialiser le compteur après l'envoi
-      }
+
+      uint32_t press = (data[21] << 16 | data[22] << 8) | data[23];
+      uint32_t temp = (data[24] << 16 | data[25] << 8) | data[26];
+      Serial.print(headers[0], HEX);
+      Serial.print(" ");
+      Serial.print(headers[1], HEX);
+      Serial.print(" ");
+      Serial.print(press);
+      Serial.print(" ");
+      Serial.println(temp);
       /*
       Serial.print(headers[0], HEX);
       Serial.print(" ");
@@ -130,16 +129,15 @@ void loop()
       Serial.print(press);
       Serial.println(" ");
       */
-      // Assemble 18-bit raw values
 
       /*
-      uint8_t x0 = data[24];
-      uint8_t x1 = data[25];
-      uint8_t y0 = data[26];
-      uint8_t y1 = data[27];
-      uint8_t z0 = data[28];
-      uint8_t z1 = data[29];
-      uint8_t xyz_ext = data[30];
+      uint8_t x0 = data[27];
+      uint8_t x1 = data[28];
+      uint8_t y0 = data[29];
+      uint8_t y1 = data[30];
+      uint8_t z0 = data[31];
+      uint8_t z1 = data[32];
+      uint8_t xyz_ext = data[33];
       uint32_t x_raw = ((uint32_t)x0 << 10) | ((uint32_t)x1 << 2) | ((xyz_ext >> 6) & 0x03);
       uint32_t y_raw = ((uint32_t)y0 << 10) | ((uint32_t)y1 << 2) | ((xyz_ext >> 4) & 0x03);
       uint32_t z_raw = ((uint32_t)z0 << 10) | ((uint32_t)z1 << 2) | ((xyz_ext >> 2) & 0x03);

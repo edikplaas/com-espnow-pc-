@@ -105,13 +105,13 @@ void loop()
     Serial0.readBytes(headers, 2);
 
     int trameType = -1;
-    if (headers[0] == 1 && headers[1] == 2)
+    if (headers[0] == 9 && headers[1] == 10)
       trameType = 0; // Identification du patch
-    else if (headers[0] == 3 && headers[1] == 4)
+    else if (headers[0] == 9 && headers[1] == 10)
       trameType = 1;
-    else if (headers[0] == 5 && headers[1] == 6)
+    else if (headers[0] == 9 && headers[1] == 10)
       trameType = 2;
-    else if (headers[0] == 7 && headers[1] == 8)
+    else if (headers[0] == 9 && headers[1] == 10)
       trameType = 3;
 
     if (trameType != -1)

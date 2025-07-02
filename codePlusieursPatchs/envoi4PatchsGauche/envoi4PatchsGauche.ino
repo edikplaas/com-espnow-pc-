@@ -39,7 +39,7 @@ void setup() {
   writeRegister16(0x20, 0x40, 0x27); //acc
   writeRegister16(0x21, 0x40, 0x4B); //gyr
   //config baro
-  writeRegister8(0x1B, 0x31); //(Normal mode, pressure enabled, temperature disabled), reg = pwr_ctrl
+  writeRegister8(0x1B, 0x33); //(Normal mode, pressure enabled, temperature enabled), reg = pwr_ctrl
   writeRegister8(0x1C, 0x00); //resolution *1, reg = OSR
   initializeMMC5983MA();
   pinMode(DE_RE_PIN, OUTPUT);
@@ -56,13 +56,14 @@ void loop() {
   read_send_data();
 }
 void read_send_data() {
-  uint8_t frame[33];
+  uint8_t frame[36];
   frame[0] = ADDRESS_DEBUT1;
   frame[1] = ADDRESS_DEBUT2;
   frame[2] = frameCounter++;
 
   uint8_t data_1[2], data_2[2], data_3[2], data_4[2];
   uint8_t data_press[3];
+  uint8_t data_temp[3];
   int bytesRead_1 = I2CRead_new(0x28, data_1, data_2, data_3, data_4, sizeof(data_1));
 
 
@@ -88,6 +89,9 @@ void read_send_data() {
 
   readMultipleRegisters(0x04, data_press, 3); //la data pressure commence a partir de ce registre
   uint32_t pressure = ((uint32_t)data_press[2] << 16) | ((uint32_t)data_press[1] << 8) | data_press[0];
+  readMultipleRegisters(0x07, data_temp, 3);
+  uint32_t temp = ((uint32_t)data_temp[2] << 16) | ((uint32_t)data_temp[1] << 8) | data_temp[0]; //raw temp
+  
   uint8_t x0 = readRegister(0x00);
   uint8_t x1 = readRegister(0x01);
   uint8_t y0 = readRegister(0x02);
@@ -155,15 +159,19 @@ void read_send_data() {
   frame[23] = (pressure >> 16) & 0xFF;
   frame[24] = (pressure >> 8) & 0xFF;
   frame[25] = pressure & 0xFF;
-  frame[26] = x0;
-  frame[27] = x1;
-  frame[28] = y0;
-  frame[29] = y1;
-  frame[30] = z0;
-  frame[31] = z1;
-  frame[32] = xyz_ext;
+  frame[26] = (temp >> 16) & 0xFF;
+  frame[27] = (temp >> 8) & 0xFF;
+  frame[28] = temp & 0xFF;
+  
+  frame[29] = x0;
+  frame[30] = x1;
+  frame[31] = y0;
+  frame[32] = y1;
+  frame[33] = z0;
+  frame[34] = z1;
+  frame[35] = xyz_ext;
   LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_3); //DE : high, RE : low.1
-  Serial.write(frame, 33);
+  Serial.write(frame, 36);
   Serial.flush();
   LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_3);
 }

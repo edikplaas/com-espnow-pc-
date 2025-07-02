@@ -20,13 +20,13 @@ const unsigned long intervalleTopDepart = 4000; // intervalle en µs qui corresp
 bool modeRecharge = false; // true si l'ESP est branché au pc, false sinon
 
 typedef struct struct_message
-{ // Trame unique de 23 octets de data
-  uint8_t bytes[33];
+{ // Trame unique de 36 octets de data
+  uint8_t bytes[36];
 } struct_message;
 
 typedef struct struct_combined_message
 {                    // Grosse trame combinée de 4 trames (les 4 patchs) pour l'envoi en ESP NOW
-  uint8_t bytes[132]; // 23 octets * 4 trames
+  uint8_t bytes[144]; // 23 octets * 4 trames
 } struct_combined_message;
 
 struct_combined_message combinedData;
@@ -115,14 +115,14 @@ void loop()
 
     if (trameType != -1)
     {
-      byte data[31];
-      Serial0.readBytes(data, 31); // Lecture des 24 octets de data après l'entête
+      byte data[34];
+      Serial0.readBytes(data, 34); // Lecture des 24 octets de data après l'entête
 
       // Calculer la position de la trame dans le tableau combiné
-      int startPos = trameType * 33;
+      int startPos = trameType * 36;
       combinedData.bytes[startPos] = headers[0]; // Stockage des entêtes
       combinedData.bytes[startPos + 1] = headers[1];
-      for (int i = 0; i < 31; i++)
+      for (int i = 0; i < 34; i++)
       { // Stockage de la data
         combinedData.bytes[startPos + 2 + i] = data[i];
       }
@@ -131,7 +131,7 @@ void loop()
       // Envoyer toutes les trames ensemble si toutes ont été reçues
       if (trameCount == 4)
       { // Si les 4 trames des patchs (1, 2, 3 et 4) reçues, alors envoi des 4 trames d'un coup
-        esp_now_send(broadcastAddress, (uint8_t *)&combinedData, 132);
+        esp_now_send(broadcastAddress, (uint8_t *)&combinedData, 144);
         trameCount = 0; // Réinitialiser le compteur après l'envoi
       }
     }
