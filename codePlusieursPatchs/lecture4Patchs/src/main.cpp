@@ -1,6 +1,8 @@
 #include <Arduino.h>
 
 /*
+Code de debug sans communication ESPNOW, c'est directement le module de communication de la semelle qui communique avec le PC via le port série
+
 La communication se passe de cette manière :
 L'ESP du module de com envoie un "top départ" (un octet spécial) aux 4 patchs à une fréquence précise
 A chaque fois que les 4 patchs reçoivent le top départ, ils envoient leurs données en respectant l'ordre patch 1 - 2 - 3 - 4 à l'aide d'un délai appliqué avant la transmission
@@ -88,6 +90,7 @@ void loop()
       Serial.print(press);
       Serial.print(" ");
       Serial.println(temp);
+      // COMMENTEZ / DECOMMENTEZ sCE QUE VOUS VOULEZ POUR DEBUG
       /*
       Serial.print(headers[0], HEX);
       Serial.print(" ");

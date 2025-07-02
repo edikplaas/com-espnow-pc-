@@ -20,7 +20,7 @@
 
 uint8_t patch = 1; // Patch 1 = Talon, Patch 4 = Orteils
 uint8_t ADDRESS_DEBUT1 = 9 + 2 * (patch - 1); // Identifiant 1 dans l'entête, directement calculé à partir du numéro du patch
-uint8_t ADDRESS_DEBUT2 = 10 + 2 * (patch - 1); // Identifiant 1 dans l'entête, directement calculé à partir du numéro du patch
+uint8_t ADDRESS_DEBUT2 = 10 + 2 * (patch - 1); // Identifiant 2 dans l'entête, directement calculé à partir du numéro du patch
 uint8_t frameCounter = 0; // Compteur interne à la trame
 
 void setup() {

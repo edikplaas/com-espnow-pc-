@@ -3,8 +3,9 @@
 #include <WiFi.h>
 
 /*
+Code de transmission pour le module de communication du pied gauche
 La communication se passe de cette manière :
-L'ESP du module de com envoie un "top départ" (un octet spécial) aux 4 patchs à une fréquence précise
+L'ESP du module de com envoie un "top départ" (un octet spécial) aux 4 patchs à une fréquence précise (ici 250 Hz avec une période de 4000 µs)
 A chaque fois que les 4 patchs reçoivent le top départ, ils envoient leurs données en respectant l'ordre patch 1 - 2 - 3 - 4 à l'aide d'un délai appliqué avant la transmission
 Chaque trame est lue, mais l'envoi sans fil en ESP NOW se fait que lorsque les 4 trames des patchs sont reçues et stockées pour éviter de saturer la com ESP NOW tout en respectant
 la fréquence de 250Hz
@@ -25,8 +26,8 @@ typedef struct struct_message
 } struct_message;
 
 typedef struct struct_combined_message
-{                    // Grosse trame combinée de 4 trames (les 4 patchs) pour l'envoi en ESP NOW
-  uint8_t bytes[144]; // 23 octets * 4 trames
+{                    // Grande trame combinée de 4 trames (les 4 patchs) pour l'envoi en ESP NOW
+  uint8_t bytes[144]; // 36 octets * 4 trames
 } struct_combined_message;
 
 struct_combined_message combinedData;
@@ -67,7 +68,8 @@ void envoiTopDepart() // Fonction pour l'envoi du top départ aux 4 patchs
   static int oldTime = 0;
   int newTime = micros(); 
   if (newTime - oldTime >= intervalleTopDepart && !Serial0.available() && !modeRecharge)
-  { // Envoi du top départ à 250 Hz (période 4000µs)
+  { // Si période de 4000 µs atteinte, liaison RS485 disponible à l'écriture et non mode recharge
+    // Envoi du top départ à 250 Hz (période 4000µs)
     oldTime = newTime;
     digitalWrite(DE_RE_PIN, HIGH); // Mode transmission
     Serial0.write(100);            // Octet spécial pour le top départ
@@ -116,7 +118,7 @@ void loop()
     if (trameType != -1)
     {
       byte data[34];
-      Serial0.readBytes(data, 34); // Lecture des 24 octets de data après l'entête
+      Serial0.readBytes(data, 34); // Lecture des 34 octets de data après l'entête
 
       // Calculer la position de la trame dans le tableau combiné
       int startPos = trameType * 36;

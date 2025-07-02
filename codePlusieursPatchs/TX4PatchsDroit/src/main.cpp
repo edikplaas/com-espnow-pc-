@@ -3,8 +3,9 @@
 #include <WiFi.h>
 
 /*
+Code de transmission pour le module de communication du pied droit
 La communication se passe de cette manière :
-L'ESP du module de com envoie un "top départ" (un octet spécial) aux 4 patchs à une fréquence précise
+L'ESP du module de com envoie un "top départ" (un octet spécial) aux 4 patchs à une fréquence précise (ici 250 Hz avec une période de 4000 µs)
 A chaque fois que les 4 patchs reçoivent le top départ, ils envoient leurs données en respectant l'ordre patch 1 - 2 - 3 - 4 à l'aide d'un délai appliqué avant la transmission
 Chaque trame est lue, mais l'envoi sans fil en ESP NOW se fait que lorsque les 4 trames des patchs sont reçues et stockées pour éviter de saturer la com ESP NOW tout en respectant
 la fréquence de 250Hz
@@ -20,13 +21,13 @@ const unsigned long intervalleTopDepart = 4000; // intervalle en µs qui corresp
 bool modeRecharge = false; // true si l'ESP est branché au pc, false sinon
 
 typedef struct struct_message
-{ // Trame unique de 23 octets de data
-  uint8_t bytes[33];
+{ // Trame unique de 36 octets de data
+  uint8_t bytes[36];
 } struct_message;
 
 typedef struct struct_combined_message
-{                    // Grosse trame combinée de 4 trames (les 4 patchs) pour l'envoi en ESP NOW
-  uint8_t bytes[132]; // 23 octets * 4 trames
+{                    // Grande trame combinée de 4 trames (les 4 patchs) pour l'envoi en ESP NOW
+  uint8_t bytes[144]; // 36 octets * 4 trames
 } struct_combined_message;
 
 struct_combined_message combinedData;
@@ -67,11 +68,12 @@ void envoiTopDepart() // Fonction pour l'envoi du top départ aux 4 patchs
   static int oldTime = 0;
   int newTime = micros(); 
   if (newTime - oldTime >= intervalleTopDepart && !Serial0.available() && !modeRecharge)
-  { // Envoi du top départ à 250 Hz (période 4000µs)
+  { // Si période de 4000 µs atteinte, liaison RS485 disponible à l'écriture et non mode recharge
+    // Envoi du top départ à 250 Hz (période 4000µs)
     oldTime = newTime;
     digitalWrite(DE_RE_PIN, HIGH); // Mode transmission
     Serial2.write(100);            // Octet spécial pour le top départ
-    Serial2.flush();
+    Serial2.flush();              // SERIAL2 utilisé pour le module de communication du pied droit
     digitalWrite(DE_RE_PIN, LOW); // Mode réception
   }
 }
@@ -105,25 +107,25 @@ void loop()
     Serial0.readBytes(headers, 2);
 
     int trameType = -1;
-    if (headers[0] == 9 && headers[1] == 10)
+    if (headers[0] == 1 && headers[1] == 2)
       trameType = 0; // Identification du patch
-    else if (headers[0] == 9 && headers[1] == 10)
+    else if (headers[0] == 3 && headers[1] == 4)
       trameType = 1;
-    else if (headers[0] == 9 && headers[1] == 10)
+    else if (headers[0] == 5 && headers[1] == 6)
       trameType = 2;
-    else if (headers[0] == 9 && headers[1] == 10)
+    else if (headers[0] == 7 && headers[1] == 8)
       trameType = 3;
 
     if (trameType != -1)
     {
-      byte data[31];
-      Serial0.readBytes(data, 31); // Lecture des 24 octets de data après l'entête
+      byte data[34];
+      Serial0.readBytes(data, 34); // Lecture des 34 octets de data après l'entête
 
       // Calculer la position de la trame dans le tableau combiné
-      int startPos = trameType * 33;
+      int startPos = trameType * 36;
       combinedData.bytes[startPos] = headers[0]; // Stockage des entêtes
       combinedData.bytes[startPos + 1] = headers[1];
-      for (int i = 0; i < 31; i++)
+      for (int i = 0; i < 34; i++)
       { // Stockage de la data
         combinedData.bytes[startPos + 2 + i] = data[i];
       }
@@ -132,7 +134,7 @@ void loop()
       // Envoyer toutes les trames ensemble si toutes ont été reçues
       if (trameCount == 4)
       { // Si les 4 trames des patchs (1, 2, 3 et 4) reçues, alors envoi des 4 trames d'un coup
-        esp_now_send(broadcastAddress, (uint8_t *)&combinedData, 132);
+        esp_now_send(broadcastAddress, (uint8_t *)&combinedData, 144);
         trameCount = 0; // Réinitialiser le compteur après l'envoi
       }
     }
