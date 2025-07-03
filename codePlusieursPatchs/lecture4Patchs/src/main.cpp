@@ -90,7 +90,7 @@ void loop()
       Serial.print(press);
       Serial.print(" ");
       Serial.println(temp);
-      // COMMENTEZ / DECOMMENTEZ sCE QUE VOUS VOULEZ POUR DEBUG
+      // COMMENTEZ / DECOMMENTEZ CE QUE VOUS VOULEZ POUR DEBUG
       /*
       Serial.print(headers[0], HEX);
       Serial.print(" ");
