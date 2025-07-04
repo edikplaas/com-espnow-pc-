@@ -10,13 +10,15 @@ Ce bus RS485 nous permet d'avoir une communication multipoint, rapide, le tout s
 Néamoins, il faut faire attention à comment nous programmons avec ce bus RS485, en effet quand un des composants "parle" (ou écrit) sur ce bus, il faut que tous les autres composants soient en mode "écoute".  
 
 # Code exemple d'envoi d'un nombre (pour STM32)
+``` c
 LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_3); //DE : high, RE : low.1  
 Serial.write(nombre);  
 Serial.flush();  
-LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_3);  
+LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_3); 
+```
 
 La première ligne sert à mettre le convertisseur UART / RS485 en mode écriture (il faut veiller à ce que tous les autres composants soient en mode lecture).  
-On utilise 'Serial.write(nombre)' pour envoyer une donnée, ou bien 'Serial.write(trame,tailleDeTrame)' pour envoyer une trame de données.  
+On utilise `Serial.write(nombre)` pour envoyer une donnée, ou bien `Serial.write(trame,tailleDeTrame)` pour envoyer une trame de données.  
 'Serial.flush()' est utilisé pour s'assurer que les données sont envoyées sur la liaison série.  
 Puis la dernière ligne sert à activer le mode lecture.  
 
@@ -31,4 +33,17 @@ Pour que le module de communication récupère toutes les données de la semelle
 Mais attention : chaque STM32 possède un délai propre à leur numéro de patch, cela veut dire que c'est en premier le talon qui passe en mode écriture pour envoyer les données de la semelle, en un temps inférieur à 100µs. Après le délai imposé pour le deuxième patch, c'est à son tour d'envoyer ses données, ainsi de suite.  
 Donc pour avoir une fréquence de communication de 250 Hz, le module de communication envoie son top départ toutes les 4000 µs.  
 
-
+# Code d'envoi des données avec un délai propre au patch
+```c
+void loop() {  
+  byte octet = 0;  
+  while (octet != 100) { // Attente de la détection du top départ envoyé par le module de com  
+    if (Serial.available()) { // Si des données disponibles  
+      octet = Serial.read(); // On lit l'octet  
+    }
+  }
+  delayMicroseconds(300 + 100 * (patch)); // Délai imposé pour respecter la commutation du mode transmission au mode réception  
+  read_send_data();  
+}  
+```
+Le module de communication, après avoir reçu les 4 trames de données (une de chaque patch), envoie d'un coup les 4 trames en sans-fil vers un autre ESP32 connecté au PC grâce au protocole ESP-NOW une fois les 4 trames reçues.    
