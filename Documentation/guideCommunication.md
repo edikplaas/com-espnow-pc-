@@ -1,4 +1,4 @@
-Ceci est le guide pour comprendre les différents bus et protocoles de communication utilisés  
+## Guide pour comprendre les différents bus et protocoles de communication utilisés  
 
 => Voir photo de chaîne de communication  
 
@@ -23,10 +23,12 @@ On utilise `Serial.write(nombre)` pour envoyer une donnée, ou bien `Serial.writ
 Puis la dernière ligne sert à activer le mode lecture.  
 
 # Alternative (pour ESP32)
+```c
 digitalWrite(DE_RE_PIN, HIGH); // Mode transmission  
 Serial0.write(100);            // Octet spécial pour le top départ  
 Serial0.flush(); // SERIAL2 POUR LE PIED DROIT ET SERIAL0 POUR LE PIED GAUCHE  
 digitalWrite(DE_RE_PIN, LOW); // Mode réception  
+```
 
 # Comment les microcontrôleurs communiquent entre eux ?
 Pour que le module de communication récupère toutes les données de la semelle pour ensuite les envoyer vers le PC, il envoie un signal "top départ" (ici un nombre sur un octet) sur le bus RS485, les 4 STM32 étant en mode écoute, ils commutent en mode écriture après avoir reçu le top départ.  
