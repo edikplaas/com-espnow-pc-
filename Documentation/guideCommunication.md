@@ -1,39 +1,28 @@
-Ceci est le guide pour mener à bien l'assemblage des semelles instrumentées
+Ceci est le guide pour comprendre les différents bus et protocoles de communication utilisés  
 
-Matériel utilisé : adhésif fin double face, fer à souder, sciseaux / cutter, flux pour la soudure, silicone en tube, objet fin (stylo)
+=> Voir photo de chaîne de communication  
 
-L'assemblage se fait dans l'ordre suivant : Fixation des taquets, soudure puis fixation des capteurs de force, soudure des patchs entre eux, pose du silicone, insertion de la semelle électronique dans la coque flexible, insertion des plaques d'appui
-En parallèle, assemblage du module de communication : Insertion du microcontrôleur et de la batterie, pose du couvercle
+Sur chacun des patchs se trouve un microcontrôleur STM32, ce microcontrôleur peut communiquer vers un autre composant en liaison série avec les broches RX/TX.  
+Nous utilisons cette liaison RX/TX pour convertir cette liaison série en liaison RS485 grâce à un convertisseur.  
+Ce bus RS485 nous permet d'avoir une communication multipoint, rapide et sur une longue distance.  
 
+Sur ce bus RS485 d'une semelle entière se trouve les 4 STM32 des 4 patchs ainsi que l'ESP32 du module de communication.  
+Néamoins, il faut faire attention à comment nous programmons avec ce bus RS485, en effet quand un des composants "parle" (ou écrit) sur ce bus, il faut que tous les autres composants soient en mode "écoute".
 
+# Code exemple d'envoi d'un nombre (pour STM32)
+LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_3); //DE : high, RE : low.1  
+Serial.write(nombre);  
+Serial.flush();  
+LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_3);  
 
-Fixer les taquets aux patchs:
-    Avec de l'adhésif fin double face, fixez les taquets aux PCB, ne pas boucher les petits trous.
-    Leur sens est important : Si le taquet a une "encoche" alors l'encoche est positionnée vers les pattes à souder
-    S'il n'y a pas d'encoche, le côté "scindé" du taquet est positionné vers les pattes à souder
+La première ligne sert à mettre le convertisseur UART / RS485 en mode écriture (il faut veiller à ce que tous les autres composants soient en mode lecture).  
+On utilise 'Serial.write(nombre)' pour envoyer une donnée, ou bien 'Serial.write(trame,tailleDeTrame)' pour envoyer une trame de données.  
+'Serial.flush()' est utilisé pour s'assurer que les données sont envoyées sur la liaison série.  
+Puis la dernière ligne sert à activer le mode lecture.  
 
-Souder les capteurs de force aux PCB :
-    Privilégier la soudure faite par un professionnel dans l'atelier électronique
-    Chaque fil d'un capteur de force se soude sur la patte en face de lui
+# Alternative (pour ESP32)
+digitalWrite(DE_RE_PIN, HIGH); // Mode transmission
+Serial0.write(100);            // Octet spécial pour le top départ
+Serial0.flush(); // SERIAL2 POUR LE PIED DROIT ET SERIAL0 POUR LE PIED GAUCHE
+digitalWrite(DE_RE_PIN, LOW); // Mode réception
 
-Fixer les capteurs de force aux patchs:
-    Avec de l'adhésif fin double face, collez les capteurs dans les taquets, en poussant bien fort sur le capteur pour qu'il épouse l'inclinaison du taquet
-    Avoir les fils du capteur orientés de préférence vers les pattes
-
-Soudure des patchs entre eux :
-    Voir photo soudure
-    Souder 4 fils courts mais assez long pour avoir un pivot faisable entre 2 patchs
-    Très important : souder les fils en croisé, et non en parallèle
-
-Pose du silicone :
-    Avec du silicone en tube, recouvrez les soudures réalisées : sur les pattes des capteurs de force ainsi que sur les pattes entre les patchs
-    Mettre un tout petit peu de silicone, ne pas dépasser sur les bords, laisser sécher quelques heures
-
-Insertion de la semelle électronique dans la coque flexible :
-    Essayer de plier un peu la coque pour vous aider à insérer la semelle électronique, ne pas trop plier la semelle
-    Prendre son temps
-
-Insertion des plaques d'appui :
-    Préinsérez les plaques en les glissant sous les bords
-    Aidez-vous d'un objet fin comme un stylo pour élargir les bords de la coque et insérez les plaques
-    

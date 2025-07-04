@@ -3,7 +3,7 @@ import csv
 import os
 import math
 # Chemin vers le fichier binaire
-file_path = '/home/eplanson/Documents/dataSemelle1.bin' # A adapter
+file_path = '/home/eplanson/Documents/dataSemelle2.bin' # A adapter
 TWO_POWER_65 = 36893488147419103232
 # Ouvrir le fichier en mode binaire et lire son contenu
 with open(file_path, 'rb') as file:
@@ -245,13 +245,5 @@ for i in range(len(hex_representation)-72):
            L4.append(hex_to_decimal(hex_representation[i+j])) 
         L4[0]=oldSignalState
         L4=decode(L4)
-        L.append(L4)
-    if int_list[i]==0 and int_list[i+1]==9 and int_list[i+2]==0 and int_list[i+3]==10: # On cherche une trame du patch 4
-        L5=[]
-        for j in range(72): # Pour tous les groupes de 4 bits
-           L5.append(hex_to_decimal(hex_representation[i+j])) 
-        L5[0]=oldSignalState
-        L5=decode(L5)
-        L.append(L5)
 chemin_acces = '/home/eplanson/Documents/decodageOutput.csv'
 write_list_of_lists_to_csv(L, chemin_acces)

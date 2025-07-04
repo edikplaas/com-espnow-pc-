@@ -11,7 +11,7 @@ la fréquence de 250Hz
 */
 
 #define DE_RE_PIN 1                                                // GPIO1 pour contrôler DE/RE du transceiver RS485
-const unsigned long intervalleTopDepart = 4000;                 // intervalle en µs qui correspond à la période entre chaque envoi du top départ qui permet de récupèrer les 4 trames respectives des patchs
+const unsigned long intervalleTopDepart = 5000;                 // intervalle en µs qui correspond à la période entre chaque envoi du top départ qui permet de récupèrer les 4 trames respectives des patchs
 // 4000 µs => 250 Hz
 
 typedef struct struct_message
@@ -36,8 +36,8 @@ void envoiTopDepart() // Fonction pour l'envoi du top départ aux 4 patchs
   { // Envoi du top départ à 250 Hz (période 4000µs)
     oldTime = newTime;
     digitalWrite(DE_RE_PIN, HIGH); // Mode transmission
-    Serial0.write(100);            // Octet spécial pour le top départ
-    Serial0.flush(); // SERIAL2 POUR LE PIED DROIT ET SERIAL0 POUR LE PIED GAUCHE
+    Serial2.write(100);            // Octet spécial pour le top départ
+    Serial2.flush(); // SERIAL2 POUR LE PIED DROIT ET SERIAL0 POUR LE PIED GAUCHE
     digitalWrite(DE_RE_PIN, LOW); // Mode réception
   }
 }
@@ -53,6 +53,7 @@ void setup()
 
 void loop()
 {
+  static int cpt;
   if (Serial0.available()) // Si il y a des données dispo à la lecture et que l'ESP n'est pas branché au PC
   {                       // On lit les données et on les stocke
     byte headers[2];       // Récupère l'entête (2 octets)
@@ -67,7 +68,8 @@ void loop()
       trameType = 2;
     else if (headers[0] == 7 && headers[1] == 8)
       trameType = 3;
-    
+      cpt++;
+      Serial.println(cpt);
     if (trameType != -1)
     {
       byte data[34];
@@ -80,7 +82,8 @@ void loop()
         combinedData.bytes[startPos + 2 + i] = data[i];
       }
       trameCount++;
-
+      // COMMENTEZ / DECOMMENTEZ CE QUE VOUS VOULEZ POUR DEBUG
+      /*
       uint32_t press = (data[21] << 16 | data[22] << 8) | data[23];
       uint32_t temp = (data[24] << 16 | data[25] << 8) | data[26];
       Serial.print(headers[0], HEX);
@@ -90,12 +93,14 @@ void loop()
       Serial.print(press);
       Serial.print(" ");
       Serial.println(temp);
-      // COMMENTEZ / DECOMMENTEZ CE QUE VOUS VOULEZ POUR DEBUG
-      /*
+      */
+      
+
       Serial.print(headers[0], HEX);
       Serial.print(" ");
       Serial.print(headers[1], HEX);
-      Serial.print(" ");
+      Serial.println(" ");
+      /*
       int force1 = data[1] << 8 | data[2];
       int force2 = data[3] << 8 | data[4];
       int force3 = data[5] << 8 | data[6];
