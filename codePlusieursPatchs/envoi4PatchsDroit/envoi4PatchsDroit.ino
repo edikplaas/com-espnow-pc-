@@ -18,7 +18,7 @@
 #define CS_baro PA4   // Chip Select or Slave Select Pin A3
 #define CS_mag PA3
 
-uint8_t patch = 1; // Patch 1 = Talon, Patch 4 = Orteils
+uint8_t patch = 4; // Patch 1 = Talon, Patch 4 = Orteils
 uint8_t ADDRESS_DEBUT1 = 9 + 2 * (patch - 1); // Identifiant 1 dans l'entête, directement calculé à partir du numéro du patch
 uint8_t ADDRESS_DEBUT2 = 10 + 2 * (patch - 1); // Identifiant 2 dans l'entête, directement calculé à partir du numéro du patch
 uint8_t frameCounter = 0; // Compteur interne à la trame
@@ -102,44 +102,44 @@ void read_send_data() {
 
   switch (patch) {
     case 1:
-      frame[3] = (force_1 >> 8) & 0xFF; // Décomposition des octets
-      frame[4] = force_1 & 0xFF;
-      frame[5] = (force_3 >> 8) & 0xFF;
-      frame[6] = force_3 & 0xFF;
-      frame[7] = (force_2 >> 8) & 0xFF;
-      frame[8] = force_2 & 0xFF;
-      frame[9] = (force_4 >> 8) & 0xFF;
-      frame[10] = force_4 & 0xFF;
+      frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
+      frame[4] = force_3 & 0xFF;
+      frame[5] = (force_1 >> 8) & 0xFF;
+      frame[6] = force_1 & 0xFF;
+      frame[7] = (force_4 >> 8) & 0xFF;
+      frame[8] = force_4 & 0xFF;
+      frame[9] = (force_2 >> 8) & 0xFF;
+      frame[10] = force_2 & 0xFF;
       break;
     case 2 :
-      frame[3] = (force_2 >> 8) & 0xFF; // Décomposition des octets
-      frame[4] = force_2 & 0xFF;
-      frame[5] = (force_3 >> 8) & 0xFF;
-      frame[6] = force_3 & 0xFF;
-      frame[7] = (force_1 >> 8) & 0xFF;
-      frame[8] = force_1 & 0xFF;
-      frame[9] = (force_4 >> 8) & 0xFF;
-      frame[10] = force_4 & 0xFF;
+      frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
+      frame[4] = force_3 & 0xFF;
+      frame[5] = (force_2 >> 8) & 0xFF;
+      frame[6] = force_2 & 0xFF;
+      frame[7] = (force_4 >> 8) & 0xFF;
+      frame[8] = force_4 & 0xFF;
+      frame[9] = (force_1 >> 8) & 0xFF;
+      frame[10] = force_1 & 0xFF;
       break;
     case 3 :
-      frame[3] = (force_1 >> 8) & 0xFF; // Décomposition des octets
-      frame[4] = force_1 & 0xFF;
-      frame[5] = (force_3 >> 8) & 0xFF;
-      frame[6] = force_3 & 0xFF;
-      frame[7] = (force_2 >> 8) & 0xFF;
-      frame[8] = force_2 & 0xFF;
-      frame[9] = (force_4 >> 8) & 0xFF;
-      frame[10] = force_4 & 0xFF;
+      frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
+      frame[4] = force_3 & 0xFF;
+      frame[5] = (force_1 >> 8) & 0xFF;
+      frame[6] = force_1 & 0xFF;
+      frame[7] = (force_4 >> 8) & 0xFF;
+      frame[8] = force_4 & 0xFF;
+      frame[9] = (force_2 >> 8) & 0xFF;
+      frame[10] = force_2 & 0xFF;
       break;
     case 4:
       frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
       frame[4] = force_3 & 0xFF;
-      frame[5] = (force_4 >> 8) & 0xFF;
-      frame[6] = force_4 & 0xFF;
-      frame[7] = (force_2 >> 8) & 0xFF;
-      frame[8] = force_2 & 0xFF;
-      frame[9] = (force_1 >> 8) & 0xFF;
-      frame[10] = force_1 & 0xFF;
+      frame[5] = (force_1 >> 8) & 0xFF;
+      frame[6] = force_1 & 0xFF;
+      frame[7] = (force_4 >> 8) & 0xFF;
+      frame[8] = force_4 & 0xFF;
+      frame[9] = (force_2 >> 8) & 0xFF;
+      frame[10] = force_2 & 0xFF;
   }
 
 

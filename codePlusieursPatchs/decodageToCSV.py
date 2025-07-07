@@ -13,7 +13,7 @@ with open(file_path, 'rb') as file:
 hex_representation = binascii.hexlify(content).decode('utf-8')
 
 # Afficher le contenu hexadécimal
-
+lastSignalState=0
 int_list = [int(hex_str, 16) for hex_str in hex_representation]
 
 def write_list_of_lists_to_csv(list_of_lists, filepath):
@@ -31,10 +31,6 @@ def combine_elements(lst): # Sert à créer une liste d'octets à partir d'une l
     for i in range(0, len(lst) - 1, 2):
         combined_list.append(lst[i] + lst[i + 1])
     return combined_list
-def hex_to_decimal(hex_str):
-    # Convertir la chaîne hexadécimale en un entier décimal
-    decimal_int = int(hex_str, 16)
-    return decimal_int
 
 def getUint8bits(lst,indice):
     nb = 2**4*lst[indice]+lst[indice+1]
@@ -47,10 +43,9 @@ def get16bits(lst,indice,uint = True):
 def getUint24bits(lst,indice):
     nb = 2**20*lst[indice]+2**16*lst[indice+1]+2**12*lst[indice+2]+2**8*lst[indice+3]+2**4*lst[indice+4]+lst[indice+5]
     return nb
-maxForce=0
 def getForce(forceBrute,ID,numero):
     global maxForce
-    if ID==1:
+    if ID==1 or ID>=9:
         range=100
     elif ID==3 or ID==7:
         range=50
@@ -64,8 +59,8 @@ def getForce(forceBrute,ID,numero):
     force = 4.44822*((forceBrute-1000)*(range/14000)/100)*range
     if force>range*4.44822:
         force=0
-    if force>maxForce and ID==1 and numero==1:
-        maxForce=force
+    if (ID==7 or ID==15) and numero == 1:
+        force=0
     return force
 def getTemp(rawTemp,ID):
     NVM_PAR_T3=-12
@@ -81,6 +76,19 @@ def getTemp(rawTemp,ID):
     elif ID==7:
         NVM_PAR_T1=27807
         NVM_PAR_T2=19371
+    elif ID==9:
+        NVM_PAR_T1= 27763
+        NVM_PAR_T2=18983
+    elif ID==11:
+        NVM_PAR_T1=27750
+        NVM_PAR_T2=19099
+    elif ID==13:
+        NVM_PAR_T1=27768
+        NVM_PAR_T2=18657
+    elif ID==15:
+        NVM_PAR_T1=27575
+        NVM_PAR_T2=18973
+    
     PAR_T1 = NVM_PAR_T1 * (1 << 8)
     PAR_T2 = NVM_PAR_T2 / (1 << 30)
     PAR_T3 = NVM_PAR_T3 / (1 << 48)
@@ -88,7 +96,6 @@ def getTemp(rawTemp,ID):
     partial_data2_temp = partial_data1_temp * PAR_T2
     temp = partial_data2_temp + (partial_data1_temp * partial_data1_temp) * PAR_T3
     return temp
-
 def getPress(rawPress,temp,ID):
     NVM_PAR_P1 = 230
     NVM_PAR_P2 = -1962
@@ -105,27 +112,55 @@ def getPress(rawPress,temp,ID):
     NVM_PAR_P11 = -59
     if ID==1:
         return 0
-    elif ID==2:
+    elif ID==3:
         NVM_PAR_P1 = 230
         NVM_PAR_P2 = -1962
         NVM_PAR_P5 = 25549
         NVM_PAR_P6 = 30655
         NVM_PAR_P9 = 16736
         NVM_PAR_P10 = 15
-    elif ID==3:
+    elif ID==5:
         NVM_PAR_P1 = 122
         NVM_PAR_P2 = -2459
         NVM_PAR_P5 = 25290
         NVM_PAR_P6 = 30667
         NVM_PAR_P9 = 16368
         NVM_PAR_P10 = 20
-    elif ID==4:
+    elif ID==7:
         NVM_PAR_P1 = -181
         NVM_PAR_P2 = -2349
         NVM_PAR_P5 = 25681
         NVM_PAR_P6 = 30215
         NVM_PAR_P9 = 16210
         NVM_PAR_P10 = 23
+    elif ID==9:
+        NVM_PAR_P1 = 121
+        NVM_PAR_P2 = -2090
+        NVM_PAR_P5 = 25250
+        NVM_PAR_P6 = 30200
+        NVM_PAR_P9 = 16305
+        NVM_PAR_P10 = 15
+    elif ID==11:
+        NVM_PAR_P1 = -358
+        NVM_PAR_P2 = -2628
+        NVM_PAR_P5 = 25841
+        NVM_PAR_P6 = 30585
+        NVM_PAR_P9 = 16330
+        NVM_PAR_P10 = 23
+    elif ID==13:
+        NVM_PAR_P1 = 136
+        NVM_PAR_P2 = -2770
+        NVM_PAR_P5 = 25196
+        NVM_PAR_P6 = 30866
+        NVM_PAR_P9 = 15861
+        NVM_PAR_P10 = 27
+    elif ID==15:
+        NVM_PAR_P1 = -8
+        NVM_PAR_P2 = -2269
+        NVM_PAR_P5 = 25551
+        NVM_PAR_P6 = 30619
+        NVM_PAR_P9 = 16334
+        NVM_PAR_P10 = 15
     PAR_P1 = (NVM_PAR_P1 - float(1 << 14)) / float(1 << 20)
     PAR_P2 = (NVM_PAR_P2 - float(1 << 14)) / float(1 << 29)
     PAR_P3 = NVM_PAR_P3 / float(1 << 32)
@@ -159,10 +194,13 @@ def getPress(rawPress,temp,ID):
     
 L=[]
 def decode(lstStart):
+    global lastSignalState
     lstEnd=[]
-    signal =lstStart[0]
     ID1=lstStart[1]
     ID2=lstStart[3]
+    if ID1==1 or ID1==9:
+        lastSignalState=lstStart[0]
+    signal=lastSignalState
     CPT=16*(lstStart[4])+(lstStart[5])
     F1=getForce(get16bits(lstStart,6),ID1,1)
     F2=getForce(get16bits(lstStart,10),ID1,2)
@@ -176,6 +214,7 @@ def decode(lstStart):
     gyZ=get16bits(lstStart,42,False)/ 16.384
     temp=getTemp(getUint24bits(lstStart,52),ID1)
     press=getPress(getUint24bits(lstStart,46),temp,ID1)
+
     x0 = getUint8bits(lstStart,58)
     x1 = getUint8bits(lstStart,60)
     y0 = getUint8bits(lstStart,62)
@@ -214,36 +253,26 @@ def decode(lstStart):
 
 entete=["Signal","ID1","ID2","CPT","F1 (N)","F2 (N)","F3 (N)","F4 (N)","accX (g)","accY (g)","accZ (g)","gyX (°/s)","gyY (°/s)","gyZ (°/s)","Press (Pa)","Temp (°C)","Norme (mT)"]
 L.append(entete)
-oldSignalState=0
 for i in range(len(hex_representation)-72):
-    if int_list[i]==0 and int_list[i+1]==1 and int_list[i+2]==0 and int_list[i+3]==2: # On cherche une trame du patch 1
-        L1=[]
-        oldSignalState=int_list[i-1]
+    for p in range(7):
+        if int_list[i]==0 and int_list[i+1]==(2*p+1) and int_list[i+2]==0 and int_list[i+3]==(2*p+2): 
+            list=[]
+            for j in range(72): # Pour tous les groupes de 4 bits
+                list.append(int_list[i+j])
+            list=decode(list)
+            L.append(list)
+    if int_list[i]==0 and int_list[i+1]==15 and int_list[i+2]==1 and int_list[i+3]==0: # On cherche une trame du patch 1
+        list=[]
         for j in range(72): # Pour tous les groupes de 4 bits
-           L1.append(hex_to_decimal(hex_representation[i+j])) 
-        L1[0]=oldSignalState
-        L1=decode(L1)
-        L.append(L1)
-    if int_list[i]==0 and int_list[i+1]==3 and int_list[i+2]==0 and int_list[i+3]==4: # On cherche une trame du patch 2
-        L2=[]
-        for j in range(72): # Pour tous les groupes de 4 bits
-           L2.append(hex_to_decimal(hex_representation[i+j])) 
-        L2[0]=oldSignalState
-        L2=decode(L2)
-        L.append(L2)
+            list.append(int_list[i+j])
+        list=decode(list)
+        list[2]=16
+        L.append(list)
 
-    if int_list[i]==0 and int_list[i+1]==5 and int_list[i+2]==0 and int_list[i+3]==6: # On cherche une trame du patch 3
-        L3=[]
-        for j in range(72): # Pour tous les groupes de 4 bits
-           L3.append(hex_to_decimal(hex_representation[i+j])) 
-        L3[0]=oldSignalState
-        L3=decode(L3)
-        L.append(L3)
-    if int_list[i]==0 and int_list[i+1]==7 and int_list[i+2]==0 and int_list[i+3]==8: # On cherche une trame du patch 4
-        L4=[]
-        for j in range(72): # Pour tous les groupes de 4 bits
-           L4.append(hex_to_decimal(hex_representation[i+j])) 
-        L4[0]=oldSignalState
-        L4=decode(L4)
+Lfinal=[]
+for i in range(len(L)):
+    if i>1:
+        if ((L[i][14]<120000 and L[i][14]>100000 and L[i][15]<40 and L[i][15]>10) or L[i][1]==1) and L[i][16]<300 :
+            Lfinal.append(L[i])
 chemin_acces = '/home/eplanson/Documents/decodageOutput.csv'
-write_list_of_lists_to_csv(L, chemin_acces)
+write_list_of_lists_to_csv(Lfinal, chemin_acces)

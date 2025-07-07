@@ -10,8 +10,8 @@ Chaque trame est lue, mais l'envoi sans fil en ESP NOW se fait que lorsque les 4
 la fréquence de 250Hz
 */
 
-#define DE_RE_PIN 1                                                // GPIO1 pour contrôler DE/RE du transceiver RS485
-const unsigned long intervalleTopDepart = 5000;                 // intervalle en µs qui correspond à la période entre chaque envoi du top départ qui permet de récupèrer les 4 trames respectives des patchs
+#define DE_RE_PIN 1                               // GPIO1 pour contrôler DE/RE du transceiver RS485
+const unsigned long intervalleTopDepart = 20000; // intervalle en µs qui correspond à la période entre chaque envoi du top départ qui permet de récupèrer les 4 trames respectives des patchs
 // 4000 µs => 250 Hz
 
 typedef struct struct_message
@@ -20,7 +20,7 @@ typedef struct struct_message
 } struct_message;
 
 typedef struct struct_combined_message
-{                    // Grosse trame combinée de 4 trames (les 4 patchs) pour l'envoi en ESP NOW
+{                     // Grosse trame combinée de 4 trames (les 4 patchs) pour l'envoi en ESP NOW
   uint8_t bytes[144]; // 36 octets * 4 trames
 } struct_combined_message;
 
@@ -37,8 +37,8 @@ void envoiTopDepart() // Fonction pour l'envoi du top départ aux 4 patchs
     oldTime = newTime;
     digitalWrite(DE_RE_PIN, HIGH); // Mode transmission
     Serial2.write(100);            // Octet spécial pour le top départ
-    Serial2.flush(); // SERIAL2 POUR LE PIED DROIT ET SERIAL0 POUR LE PIED GAUCHE
-    digitalWrite(DE_RE_PIN, LOW); // Mode réception
+    Serial2.flush();               // SERIAL2 POUR LE PIED DROIT ET SERIAL0 POUR LE PIED GAUCHE
+    digitalWrite(DE_RE_PIN, LOW);  // Mode réception
   }
 }
 
@@ -55,32 +55,35 @@ void loop()
 {
   static int cpt;
   if (Serial0.available()) // Si il y a des données dispo à la lecture et que l'ESP n'est pas branché au PC
-  {                       // On lit les données et on les stocke
+  {                        // On lit les données et on les stocke
     byte headers[2];       // Récupère l'entête (2 octets)
     Serial0.readBytes(headers, 2);
 
     int trameType = -1;
+    /*
     if (headers[0] == 1 && headers[1] == 2)
       trameType = 0; // Identification du patch
-    else if (headers[0] == 3 && headers[1] == 4)
+     if (headers[0] == 3 && headers[1] == 4)
       trameType = 1;
-    else if (headers[0] == 5 && headers[1] == 6)
+     if (headers[0] == 5 && headers[1] == 6)
       trameType = 2;
-    else if (headers[0] == 7 && headers[1] == 8)
+     if (headers[0] == 7 && headers[1] == 8)
       trameType = 3;
       cpt++;
-      Serial.println(cpt);
+    */
+    //if (headers[0] == 9 && headers[1] == 10)
+    //  trameType = 0; // Identification du patch
+    //if (headers[0] == 11 && headers[1] == 12)
+    //  trameType = 1;
+   // if (headers[0] == 13 && headers[1] == 14)
+   //   trameType = 2;
+    if (headers[0] == 15 && headers[1] == 16)
+      trameType = 3;
+    cpt++;
     if (trameType != -1)
     {
       byte data[34];
       Serial0.readBytes(data, 34); // Lecture des 34 octets de data après l'entête
-      int startPos = trameType * 36;
-      combinedData.bytes[startPos] = headers[0]; // Stockage des entêtes
-      combinedData.bytes[startPos + 1] = headers[1];
-      for (int i = 0; i < 34; i++)
-      { // Stockage de la data
-        combinedData.bytes[startPos + 2 + i] = data[i];
-      }
       trameCount++;
       // COMMENTEZ / DECOMMENTEZ CE QUE VOUS VOULEZ POUR DEBUG
       /*
@@ -94,13 +97,12 @@ void loop()
       Serial.print(" ");
       Serial.println(temp);
       */
-      
 
       Serial.print(headers[0], HEX);
       Serial.print(" ");
       Serial.print(headers[1], HEX);
-      Serial.println(" ");
-      /*
+      Serial.print(" ");
+
       int force1 = data[1] << 8 | data[2];
       int force2 = data[3] << 8 | data[4];
       int force3 = data[5] << 8 | data[6];
@@ -118,8 +120,8 @@ void loop()
       Serial.print(" ");
       Serial.print(force3);
       Serial.print(" ");
-      Serial.print(force4);
-
+      Serial.println(force4);
+      /*
       Serial.print(" ");
       Serial.print(accX);
       Serial.print(" ");
@@ -167,7 +169,6 @@ void loop()
       Serial.print("Norme = ");
       Serial.println(norm);
       */
-     
     }
   }
   envoiTopDepart();

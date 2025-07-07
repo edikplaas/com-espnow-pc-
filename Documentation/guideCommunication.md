@@ -9,7 +9,7 @@ Ce bus RS485 nous permet d'avoir une communication multipoint, rapide, le tout s
 4 STM32 des 4 patchs ainsi que l'ESP32 du module de communication se trouvent sur le bus RS485. C'est donc 5 composants qui communiquent entre eux grâce à ce bus.  
 Néamoins, il faut faire attention à comment nous programmons avec ce bus RS485, en effet quand un des composants "parle" (ou écrit) sur ce bus, il faut que tous les autres composants soient en mode "écoute".  
 
-# Code exemple d'envoi d'un nombre (pour STM32)
+## Code exemple d'envoi d'un nombre (pour STM32)
 ``` c
 LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_3); //DE : high, RE : low.1  
 Serial.write(nombre);  
@@ -22,7 +22,7 @@ On utilise `Serial.write(nombre)` pour envoyer une donnée, ou bien `Serial.writ
 'Serial.flush()' est utilisé pour s'assurer que les données sont envoyées sur la liaison série.  
 Puis la dernière ligne sert à activer le mode lecture.  
 
-# Alternative (pour ESP32)
+## Alternative (pour ESP32)
 ```c
 digitalWrite(DE_RE_PIN, HIGH); // Mode transmission  
 Serial0.write(100);            // Octet spécial pour le top départ  
@@ -30,12 +30,12 @@ Serial0.flush(); // SERIAL2 POUR LE PIED DROIT ET SERIAL0 POUR LE PIED GAUCHE
 digitalWrite(DE_RE_PIN, LOW); // Mode réception  
 ```
 
-# Comment les microcontrôleurs communiquent entre eux ?
+## Comment les microcontrôleurs communiquent entre eux ?
 Pour que le module de communication récupère toutes les données de la semelle pour ensuite les envoyer vers le PC, il envoie un signal "top départ" (ici un nombre sur un octet) sur le bus RS485, les 4 STM32 étant en mode écoute, ils commutent en mode écriture après avoir reçu le top départ.  
 Mais attention : chaque STM32 possède un délai propre à leur numéro de patch, cela veut dire que c'est en premier le talon qui passe en mode écriture pour envoyer les données de la semelle, en un temps inférieur à 100µs. Après le délai imposé pour le deuxième patch, c'est à son tour d'envoyer ses données, ainsi de suite.  
 Donc pour avoir une fréquence de communication de 250 Hz, le module de communication envoie son top départ toutes les 4000 µs.  
 
-# Code d'envoi des données avec un délai propre au patch
+## Code d'envoi des données avec un délai propre au patch
 ```c
 void loop() {  
   byte octet = 0;  
