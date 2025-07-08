@@ -1,5 +1,7 @@
-Ceci est le guide qui explique les différents fichiers de programmation
-
+Ceci est le guide qui explique les différents fichiers de programmation  
+Si le microcontrôleur est un ESP32 : Utiliser VSCode avec PlatformIO  
+Si le microcontrôleur est un STM32 : Utiliser Arduino IDE  
+  
 ## Dossier "Tests RS485"
 Ce dossier regroupe les fichiers de programmation qui servent à tester la communication à travers le bus RS485.  
 Il y a 2 sous-dossiers : "TRANSMISSION RS485 STM32" et "LECTURE RS485 MODULE COM".  
@@ -37,4 +39,23 @@ RX4Patchs : Code pour l'ESP32 de réception branché au PC, réception puis écr
 TX_ESPNOW_vide : Code paramétrable pour les 2 modules de com, transmission de données sans semelle connectée, sert à tester la synchro des 2 semelles depuis l'ESP32 de réception.  
 decodage.py : Fichier python de traitement de données, sert surtout à compter les trames pour mesurer le taux d'erreur  
 decodageToCSV.py : Fichier python de traitement de données, sert à mettre en forme les données, les convertir, pour les mettre dans un fichier Excel  
+envoiKeyboard.py : Fichier python d'envoi du signal de synchronisation à l'ESP32 de réception pendant l'écriture des données.  
+
+## Attention 
+Si vous devez à un moment changer l'ESP32, en un modèle différent tel que du l'ESP32C3 à l'ESP32C6 ou inversement, il est important de le préciser dans le fichier `platformio.ini` dans le dossier du projet en cours.  
+Dans le fichier `platformio.ini`, décommentez/commentez ce qu'il vous faut :    
+``` ini
+; POUR ESP32C3
+;[env:seeed_xiao_esp32c3]
+;platform = espressif32
+;board = seeed_xiao_esp32c3
+;framework = arduino
+
+; POUR ESP32C6
+[env:seeed_xiao_esp32c6]
+platform = https://github.com/pioarduino/platform-espressif32/releases/download/stable/platform-espressif32.zip
+framework = arduino
+board = seeed_xiao_esp32c6
+```
+En installant PlatformIO, l'ESP32C3 est directement disponible mais pas l'ESP32C6, c'est pour ça qu'il est important de le préciser dans le fichier avec le lien GitHub.
 
