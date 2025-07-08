@@ -3,7 +3,7 @@ import csv
 import os
 import math
 # Chemin vers le fichier binaire
-file_path = '/home/eplanson/Documents/dataSemelle2.bin' # A adapter
+file_path = '/home/eplanson/Documents/dataSemelle3.bin' # A adapter
 TWO_POWER_65 = 36893488147419103232
 # Ouvrir le fichier en mode binaire et lire son contenu
 with open(file_path, 'rb') as file:
@@ -275,4 +275,13 @@ for i in range(len(L)):
         if ((L[i][14]<120000 and L[i][14]>100000 and L[i][15]<40 and L[i][15]>10) or L[i][1]==1) and L[i][16]<300 :
             Lfinal.append(L[i])
 chemin_acces = '/home/eplanson/Documents/decodageOutput.csv'
-write_list_of_lists_to_csv(Lfinal, chemin_acces)
+
+doublons=[0,0,0,0,0,0,0,0]
+for i in range(1,len(L)-16,8):
+    for j in range(8):
+        if L[i+j]==L[i+8+j]:
+            doublons[j]+=1
+print(doublons)
+print(len(L))
+print(len(Lfinal))
+write_list_of_lists_to_csv(Lfinal , chemin_acces)

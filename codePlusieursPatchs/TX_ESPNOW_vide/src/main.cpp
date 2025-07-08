@@ -44,13 +44,16 @@ void setup()
   {
     return;
   }
+  if(piedDroit){
+    delayMicroseconds(2000);
+  }
 }
 
 void loop()
 {
   static int oldTime = micros();
   int newTime = micros();
-  static uint8_t cpt=20;
+  static uint8_t cpt=0;
   static byte data[144];
 
   for (int i = 0; i < 4; i++)

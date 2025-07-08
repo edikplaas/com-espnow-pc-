@@ -5,7 +5,7 @@
 // En parallèle, il lit également un bit signal envoyé depuis un programme python qui permet de mettre un top départ pour la synchro
 
 // Définition du buffer et des variables associées
-#define BUFFER_SIZE 201600 // Taille arbitraire et ajustable
+#define BUFFER_SIZE 2880 // Taille arbitraire et ajustable
 uint8_t dataBufferGauche[BUFFER_SIZE];
 uint8_t dataBufferDroit[BUFFER_SIZE];
 uint8_t dataBuffer[BUFFER_SIZE];
@@ -16,7 +16,6 @@ size_t bufferIndex = 0;
 String receivedSignal = "0";
 void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
 {
-/*
   if (incomingData[0] == 1)
   {
     if (bufferIndexGauche + len <= BUFFER_SIZE)
@@ -43,9 +42,9 @@ void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
       bufferIndexDroit = 0; // Réinitialiser le buffer en cas de débordement
     }
   }
-  */
   
-    // Ajout des données reçues au buffer
+  /*
+      // Ajout des données reçues au buffer
     if (bufferIndex + len <= BUFFER_SIZE)
     {
       memcpy(&dataBuffer[bufferIndex], incomingData, len);
@@ -56,6 +55,7 @@ void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
       // Gérer le débordement de buffer ici (par exemple, vider le buffer ou signaler une erreur)
       bufferIndex = 0; // Réinitialiser le buffer en cas de débordement
     }
+    */
 }
 
 void setup()
@@ -72,25 +72,16 @@ void setup()
 
 void loop()
 {
-  static int oldTime=micros();
-
-  /*
-  static bool gauche = true;
-  if (gauche && bufferIndexGauche > 0)
+  if ( bufferIndexGauche > 0 && bufferIndexDroit > 0)
   {
     Serial.write(0);
     Serial.write(dataBufferGauche, bufferIndexGauche); // Ecriture de la trame
+    Serial.write(dataBufferDroit, bufferIndexGauche);
     bufferIndexGauche = 0;                             // Réinitialiser le buffer après traitement
-    gauche = false;
+    bufferIndexDroit=0;
   }
-  if (!gauche && bufferIndexDroit > 0)
-  {
-    Serial.write(0);
-    Serial.write(dataBufferDroit, bufferIndexDroit); // Ecriture de la trame
-    bufferIndexDroit = 0;                            // Réinitialiser le buffer après traitement
-    gauche = true;
-  }*/
-  
+
+  /*
   if (bufferIndex > 0)
   {
     // Envoyer tout le contenu du buffer via Serial
@@ -103,5 +94,5 @@ void loop()
     Serial.write(dataBuffer, bufferIndex); // Ecriture de la trame
     bufferIndex = 0; // Réinitialiser le buffer après traitement
   }
-    
+    */
 }

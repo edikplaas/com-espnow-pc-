@@ -15,14 +15,12 @@ la fréquence de 250Hz
 uint8_t broadcastAddress[] = {0xDC, 0xDA, 0x0C, 0xA1, 0x95, 0xBC}; // Adresse MAC du récepteur
 unsigned long lastMillisCharge = 0;
 const unsigned long intervalleCharge = 5000;    // intervalle en ms de la vérification du mode recharge (Toutes les 5 secondes, on vérifie si l'ESP est branché au PC)
-const unsigned long intervalleTopDepart = 4000; // intervalle en µs qui correspond à la période entre chaque envoi du top départ qui permet de récupèrer les 4 trames respectives des patchs
+const unsigned long intervalleTopDepart = 6000; // intervalle en µs qui correspond à la période entre chaque envoi du top départ qui permet de récupèrer les 4 trames respectives des patchs
 // 4000 µs => 250 Hz
 
 bool modeRecharge = false; // true si l'ESP est branché au pc, false sinon
 
-bool piedDroit = true; // A CHANGER SELON LA SEMELLE UTILISEE, true => semelle droite, false => semelle gauche.
-
-
+bool piedDroit = false ; // A CHANGER SELON LA SEMELLE UTILISEE, true => semelle droite, false => semelle gauche.
 
 typedef struct struct_message
 { // Trame unique de 36 octets de data
@@ -30,7 +28,7 @@ typedef struct struct_message
 } struct_message;
 
 typedef struct struct_combined_message
-{                    // Grande trame combinée de 4 trames (les 4 patchs) pour l'envoi en ESP NOW
+{                     // Grande trame combinée de 4 trames (les 4 patchs) pour l'envoi en ESP NOW
   uint8_t bytes[144]; // 36 octets * 4 trames
 } struct_combined_message;
 
@@ -45,7 +43,7 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 }
 
 void gestionCharge() // Fonction pour la gestion de la détection d'alimentation PC
-{ 
+{
   unsigned long newTimeCharge = millis();
   if (newTimeCharge - lastMillisCharge >= intervalleCharge)
   {
@@ -70,19 +68,21 @@ void gestionCharge() // Fonction pour la gestion de la détection d'alimentation
 void envoiTopDepart() // Fonction pour l'envoi du top départ aux 4 patchs
 {
   static int oldTime = 0;
-  int newTime = micros(); 
-  if (newTime - oldTime >= intervalleTopDepart && !Serial0.available() && !modeRecharge)
+  int newTime = micros();
+  if (newTime - oldTime >= intervalleTopDepart && !Serial0.available())
   { // Si période de 4000 µs atteinte, liaison RS485 disponible à l'écriture et non mode recharge
     // Envoi du top départ à 250 Hz (période 4000µs)
     oldTime = newTime;
     digitalWrite(DE_RE_PIN, HIGH); // Mode transmission
-    if(piedDroit){
-      Serial2.write(100);            // Octet spécial pour le top départ
-      Serial2.flush();              // SERIAL2 utilisé pour le module de communication du pied droit
+    if (piedDroit)
+    {
+      Serial2.write(100); // Octet spécial pour le top départ
+      Serial2.flush();    // SERIAL2 utilisé pour le module de communication du pied droit
     }
-    else{
-      Serial0.write(100);            // Octet spécial pour le top départ
-      Serial0.flush();              // SERIAL0 utilisé pour le module de communication du pied droit
+    else
+    {
+      Serial0.write(100); // Octet spécial pour le top départ
+      Serial0.flush();    // SERIAL0 utilisé pour le module de communication du pied droit
     }
     digitalWrite(DE_RE_PIN, LOW); // Mode réception
   }
@@ -91,7 +91,8 @@ void envoiTopDepart() // Fonction pour l'envoi du top départ aux 4 patchs
 void setup()
 {
   Serial0.begin(2000000);
-  if(piedDroit){
+  if (piedDroit)
+  {
     Serial2.begin(2000000);
   }
   pinMode(DE_RE_PIN, OUTPUT); // Configurer GPIO1 comme sortie
@@ -113,21 +114,34 @@ void setup()
 
 void loop()
 {
-  if (Serial0.available() && !modeRecharge) // Si il y a des données dispo à la lecture et que l'ESP n'est pas branché au PC
-  { // On lit les données et on les stocke
-    byte headers[2]; // Récupère l'entête (2 octets)
+  if (Serial0.available()) // Si il y a des données dispo à la lecture et que l'ESP n'est pas branché au PC
+  {                                         // On lit les données et on les stocke
+    byte headers[2];                        // Récupère l'entête (2 octets)
     Serial0.readBytes(headers, 2);
 
     int trameType = -1;
-    if (headers[0] == 9 && headers[1] == 10)
-      trameType = 0; // Identification du patch
-    else if (headers[0] == 11 && headers[1] == 12)
-      trameType = 1;
-    else if (headers[0] == 13 && headers[1] == 14)
-      trameType = 2;
-    else if (headers[0] == 15 && headers[1] == 16)
-      trameType = 3;
-
+    if (piedDroit)
+    {
+      if (headers[0] == 9 && headers[1] == 10)
+        trameType = 0; // Identification du patch
+      else if (headers[0] == 11 && headers[1] == 12)
+        trameType = 1;
+      else if (headers[0] == 13 && headers[1] == 14)
+        trameType = 2;
+      else if (headers[0] == 15 && headers[1] == 16)
+        trameType = 3;
+    }
+    else
+    {
+      if (headers[0] == 1 && headers[1] == 2)
+        trameType = 0; // Identification du patch
+      else if (headers[0] == 3 && headers[1] == 4)
+        trameType = 1;
+      else if (headers[0] == 5 && headers[1] == 6)
+        trameType = 2;
+      else if (headers[0] == 7 && headers[1] == 8)
+        trameType = 3;
+    }
     if (trameType != -1)
     {
       byte data[34];
