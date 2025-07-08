@@ -27,11 +27,11 @@ Très important : souder les fils en croisé, et non en parallèle.
 Avec du silicone en tube, recouvrez les soudures réalisées : sur les pattes des capteurs de force ainsi que sur les pattes entre les patchs.  
 Mettre un tout petit peu de silicone, ne pas dépasser sur les bords, laisser sécher quelques heures, ne surtout pas couvrir les baromètres.  
 
-# Insertion de la semelle électronique dans la coque flexible
+## Insertion de la semelle électronique dans la coque flexible
 Essayer de plier un peu la coque pour vous aider à insérer la semelle électronique, ne pas trop plier la semelle.  
 Surtout prendre son temps.  
 
-# Insertion des plaques d'appui
+## Insertion des plaques d'appui
 Préinsérez les plaques en les glissant sous les bords.  
 Aidez-vous d'un objet fin comme un stylo pour élargir les bords de la coque et insérez les plaques.  
     
