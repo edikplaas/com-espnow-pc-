@@ -8,20 +8,24 @@
 #define SDA_3_PIN LL_GPIO_PIN_1 //PA1 //a1
 #define SDA_4_PIN LL_GPIO_PIN_0 //PA0 //a0
 
-
 #define MOSI_PIN PA7 // MOSI Pin A6
 #define MISO_PIN PA6 // MISO Pin A5
 #define SCLK_PIN PA5 // Clock Pin A4 
-
 
 #define CS_acc PB1   // Chip Select or Slave Select Pin D6
 #define CS_baro PA4   // Chip Select or Slave Select Pin A3
 #define CS_mag PA3
 
-uint8_t patch = 4; // Patch 1 = Talon, Patch 4 = Orteils
-uint8_t ADDRESS_DEBUT1 = 9 + 2 * (patch - 1); // Identifiant 1 dans l'entête, directement calculé à partir du numéro du patch
-uint8_t ADDRESS_DEBUT2 = 10 + 2 * (patch - 1); // Identifiant 2 dans l'entête, directement calculé à partir du numéro du patch
+// A CHANGER AUX BESOINS
+uint8_t patch = 1; // Patch 1 => Talon, Patch 4 => Orteils
+uint8_t piedDroit = 1: // piedDroit = 1 => Semelle du pied droit, piedDroit = 0 => Semelle du pied gauche
+//
+
+// A NE PAS CHANGER
+uint8_t ADDRESS_DEBUT1 = 1 + (8 * piedDroit) + 2 * (patch - 1); // Identifiant 1 dans l'entête, directement calculé à partir du numéro du patch et de la semelle utilisée
+uint8_t ADDRESS_DEBUT2 = 2 + (8 * piedDroit) + 2 * (patch - 1); // Identifiant 2 dans l'entête, directement calculé à partir du numéro du patch et de la semelle utilisée
 uint8_t frameCounter = 0; // Compteur interne à la trame
+//
 
 void setup() {
   Serial.begin(2000000);
@@ -99,49 +103,92 @@ void read_send_data() {
   uint8_t z0 = readRegister(0x04);
   uint8_t z1 = readRegister(0x05);
   uint8_t xyz_ext = readRegister(0x06);
-
-  switch (patch) {
-    case 1:
-      frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
-      frame[4] = force_3 & 0xFF;
-      frame[5] = (force_1 >> 8) & 0xFF;
-      frame[6] = force_1 & 0xFF;
-      frame[7] = (force_4 >> 8) & 0xFF;
-      frame[8] = force_4 & 0xFF;
-      frame[9] = (force_2 >> 8) & 0xFF;
-      frame[10] = force_2 & 0xFF;
-      break;
-    case 2 :
-      frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
-      frame[4] = force_3 & 0xFF;
-      frame[5] = (force_2 >> 8) & 0xFF;
-      frame[6] = force_2 & 0xFF;
-      frame[7] = (force_4 >> 8) & 0xFF;
-      frame[8] = force_4 & 0xFF;
-      frame[9] = (force_1 >> 8) & 0xFF;
-      frame[10] = force_1 & 0xFF;
-      break;
-    case 3 :
-      frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
-      frame[4] = force_3 & 0xFF;
-      frame[5] = (force_1 >> 8) & 0xFF;
-      frame[6] = force_1 & 0xFF;
-      frame[7] = (force_4 >> 8) & 0xFF;
-      frame[8] = force_4 & 0xFF;
-      frame[9] = (force_2 >> 8) & 0xFF;
-      frame[10] = force_2 & 0xFF;
-      break;
-    case 4:
-      frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
-      frame[4] = force_3 & 0xFF;
-      frame[5] = (force_1 >> 8) & 0xFF;
-      frame[6] = force_1 & 0xFF;
-      frame[7] = (force_4 >> 8) & 0xFF;
-      frame[8] = force_4 & 0xFF;
-      frame[9] = (force_2 >> 8) & 0xFF;
-      frame[10] = force_2 & 0xFF;
+  if (piedDroit == 1) {
+    switch (patch) {
+      case 1:
+        frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
+        frame[4] = force_3 & 0xFF;
+        frame[5] = (force_1 >> 8) & 0xFF;
+        frame[6] = force_1 & 0xFF;
+        frame[7] = (force_4 >> 8) & 0xFF;
+        frame[8] = force_4 & 0xFF;
+        frame[9] = (force_2 >> 8) & 0xFF;
+        frame[10] = force_2 & 0xFF;
+        break;
+      case 2 :
+        frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
+        frame[4] = force_3 & 0xFF;
+        frame[5] = (force_2 >> 8) & 0xFF;
+        frame[6] = force_2 & 0xFF;
+        frame[7] = (force_4 >> 8) & 0xFF;
+        frame[8] = force_4 & 0xFF;
+        frame[9] = (force_1 >> 8) & 0xFF;
+        frame[10] = force_1 & 0xFF;
+        break;
+      case 3 :
+        frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
+        frame[4] = force_3 & 0xFF;
+        frame[5] = (force_1 >> 8) & 0xFF;
+        frame[6] = force_1 & 0xFF;
+        frame[7] = (force_4 >> 8) & 0xFF;
+        frame[8] = force_4 & 0xFF;
+        frame[9] = (force_2 >> 8) & 0xFF;
+        frame[10] = force_2 & 0xFF;
+        break;
+      case 4:
+        frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
+        frame[4] = force_3 & 0xFF;
+        frame[5] = (force_1 >> 8) & 0xFF;
+        frame[6] = force_1 & 0xFF;
+        frame[7] = (force_4 >> 8) & 0xFF;
+        frame[8] = force_4 & 0xFF;
+        frame[9] = (force_2 >> 8) & 0xFF;
+        frame[10] = force_2 & 0xFF;
+    }
   }
-
+  else if (piedDroit == 0) {
+    switch (patch) {
+      case 1:
+        frame[3] = (force_1 >> 8) & 0xFF; // Décomposition des octets
+        frame[4] = force_1 & 0xFF;
+        frame[5] = (force_3 >> 8) & 0xFF;
+        frame[6] = force_3 & 0xFF;
+        frame[7] = (force_2 >> 8) & 0xFF;
+        frame[8] = force_2 & 0xFF;
+        frame[9] = (force_4 >> 8) & 0xFF;
+        frame[10] = force_4 & 0xFF;
+        break;
+      case 2 :
+        frame[3] = (force_2 >> 8) & 0xFF; // Décomposition des octets
+        frame[4] = force_2 & 0xFF;
+        frame[5] = (force_3 >> 8) & 0xFF;
+        frame[6] = force_3 & 0xFF;
+        frame[7] = (force_1 >> 8) & 0xFF;
+        frame[8] = force_1 & 0xFF;
+        frame[9] = (force_4 >> 8) & 0xFF;
+        frame[10] = force_4 & 0xFF;
+        break;
+      case 3 :
+        frame[3] = (force_1 >> 8) & 0xFF; // Décomposition des octets
+        frame[4] = force_1 & 0xFF;
+        frame[5] = (force_3 >> 8) & 0xFF;
+        frame[6] = force_3 & 0xFF;
+        frame[7] = (force_2 >> 8) & 0xFF;
+        frame[8] = force_2 & 0xFF;
+        frame[9] = (force_4 >> 8) & 0xFF;
+        frame[10] = force_4 & 0xFF;
+        break;
+      case 4:
+        frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
+        frame[4] = force_3 & 0xFF;
+        frame[5] = (force_4 >> 8) & 0xFF;
+        frame[6] = force_4 & 0xFF;
+        frame[7] = (force_2 >> 8) & 0xFF;
+        frame[8] = force_2 & 0xFF;
+        frame[9] = (force_1 >> 8) & 0xFF;
+        frame[10] = force_1 & 0xFF;
+    }
+  }
 
   frame[11]  = (rawAccX >> 8) & 0xFF;
   frame[12]  = rawAccX & 0xFF;

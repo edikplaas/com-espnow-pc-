@@ -60,6 +60,7 @@ void loop()
     Serial0.readBytes(headers, 2);
 
     int trameType = -1;
+    // DECOMMENTER / COMMENTER CE QUE VOUS VOULEZ 
     /*
     if (headers[0] == 1 && headers[1] == 2)
       trameType = 0; // Identification du patch

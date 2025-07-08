@@ -20,6 +20,8 @@ const unsigned long intervalleTopDepart = 4000; // intervalle en µs qui corresp
 
 esp_now_peer_info_t peerInfo;
 
+bool piedDroit = true; // A changer selon la semelle utilisée, true => semelle droite, false => semelle gauche
+
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
   // S'appelle à la bonne réception de la trame envoyée
@@ -54,10 +56,15 @@ void loop()
   for (int i = 0; i < 4; i++)
   {
     int startPos = i * 36;
-     data[startPos] = 9+2*i; // Stockage des entêtes
-     data[startPos + 1] = 10+2*i;
-    // data[startPos] = 1+2*i; // Stockage des entêtes
-    // data[startPos + 1] = 2+2*i;
+
+    if(piedDroit){
+      data[startPos] = 9+2*i; // Stockage des entêtes
+      data[startPos + 1] = 10+2*i;
+    }
+    else{
+      data[startPos] = 1+2*i; // Stockage des entêtes
+      data[startPos + 1] = 2+2*i;
+    }
     for (int j = 0; j < 34; j++)
     { // Stockage de la data
       data[startPos + 2 + j] = cpt;

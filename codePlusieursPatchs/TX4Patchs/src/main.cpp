@@ -3,7 +3,7 @@
 #include <WiFi.h>
 
 /*
-Code de transmission pour le module de communication du pied gauche
+Code de transmission pour le module de communication du pied droit
 La communication se passe de cette manière :
 L'ESP du module de com envoie un "top départ" (un octet spécial) aux 4 patchs à une fréquence précise (ici 250 Hz avec une période de 4000 µs)
 A chaque fois que les 4 patchs reçoivent le top départ, ils envoient leurs données en respectant l'ordre patch 1 - 2 - 3 - 4 à l'aide d'un délai appliqué avant la transmission
@@ -19,6 +19,10 @@ const unsigned long intervalleTopDepart = 4000; // intervalle en µs qui corresp
 // 4000 µs => 250 Hz
 
 bool modeRecharge = false; // true si l'ESP est branché au pc, false sinon
+
+bool piedDroit = true; // A CHANGER SELON LA SEMELLE UTILISEE, true => semelle droite, false => semelle gauche.
+
+
 
 typedef struct struct_message
 { // Trame unique de 36 octets de data
@@ -72,8 +76,14 @@ void envoiTopDepart() // Fonction pour l'envoi du top départ aux 4 patchs
     // Envoi du top départ à 250 Hz (période 4000µs)
     oldTime = newTime;
     digitalWrite(DE_RE_PIN, HIGH); // Mode transmission
-    Serial0.write(100);            // Octet spécial pour le top départ
-    Serial0.flush();
+    if(piedDroit){
+      Serial2.write(100);            // Octet spécial pour le top départ
+      Serial2.flush();              // SERIAL2 utilisé pour le module de communication du pied droit
+    }
+    else{
+      Serial0.write(100);            // Octet spécial pour le top départ
+      Serial0.flush();              // SERIAL0 utilisé pour le module de communication du pied droit
+    }
     digitalWrite(DE_RE_PIN, LOW); // Mode réception
   }
 }
@@ -81,6 +91,9 @@ void envoiTopDepart() // Fonction pour l'envoi du top départ aux 4 patchs
 void setup()
 {
   Serial0.begin(2000000);
+  if(piedDroit){
+    Serial2.begin(2000000);
+  }
   pinMode(DE_RE_PIN, OUTPUT); // Configurer GPIO1 comme sortie
   WiFi.mode(WIFI_STA);
   if (esp_now_init() != ESP_OK)
@@ -106,13 +119,13 @@ void loop()
     Serial0.readBytes(headers, 2);
 
     int trameType = -1;
-    if (headers[0] == 1 && headers[1] == 2)
+    if (headers[0] == 9 && headers[1] == 10)
       trameType = 0; // Identification du patch
-    else if (headers[0] == 3 && headers[1] == 4)
+    else if (headers[0] == 11 && headers[1] == 12)
       trameType = 1;
-    else if (headers[0] == 5 && headers[1] == 6)
+    else if (headers[0] == 13 && headers[1] == 14)
       trameType = 2;
-    else if (headers[0] == 7 && headers[1] == 8)
+    else if (headers[0] == 15 && headers[1] == 16)
       trameType = 3;
 
     if (trameType != -1)
