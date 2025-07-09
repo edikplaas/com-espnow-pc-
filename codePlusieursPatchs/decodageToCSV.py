@@ -17,7 +17,7 @@ hex_representation = binascii.hexlify(content).decode('utf-8')
 lastSignalState=0
 int_list = [int(hex_str, 16) for hex_str in hex_representation]
 
-def write_list_of_lists_to_csv(list_of_lists, filepath):
+def write_list_of_lists_to_csv(list_of_lists, filepath): # Sert à convertir une liste de listes en une feuille CSV
     # Assurez-vous que le répertoire existe
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     # Ouvrir le fichier CSV en mode écriture
@@ -26,12 +26,6 @@ def write_list_of_lists_to_csv(list_of_lists, filepath):
         # Parcourir chaque sous-liste et l'écrire comme une ligne dans le fichier CSV
         for sublist in list_of_lists:
             writer.writerow(sublist)
-
-def combine_elements(lst): # Sert à créer une liste d'octets à partir d'une liste de 4 bits par 4 bits
-    combined_list = []
-    for i in range(0, len(lst) - 1, 2):
-        combined_list.append(lst[i] + lst[i + 1])
-    return combined_list
 
 def getUint8bits(lst,indice):
     nb = 2**4*lst[indice]+lst[indice+1]
