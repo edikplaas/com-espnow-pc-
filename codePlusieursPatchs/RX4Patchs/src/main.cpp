@@ -5,7 +5,7 @@
 // En parallèle, il lit également un bit signal envoyé depuis un programme python qui permet de mettre un top départ pour la synchro
 
 // Définition du buffer et des variables associées
-#define BUFFER_SIZE 28800 // Taille arbitraire et ajustable
+#define BUFFER_SIZE 2960 // Taille arbitraire et ajustable
 uint8_t dataBuffer[BUFFER_SIZE];
 uint8_t broadcastAddressLeft[] = {0x8C, 0xBF, 0xEA, 0xCC, 0x9C, 0x04}; // Adresse MAC du récepteur
 uint8_t broadcastAddressRight[] = {0x8C, 0xBF, 0xEA, 0xCC, 0xA8, 0xDC}; // Adresse MAC du récepteur
@@ -76,8 +76,7 @@ void setup()
 
 void loop()
 {
-  if (bufferIndex > 0)
-  {
+
     // Envoyer tout le contenu du buffer via Serial
     if (Serial.available()) // Si des données viennent du PC
     {
@@ -87,14 +86,16 @@ void loop()
       digitalWrite(0, HIGH);
       topSynchro=true;
     }
+    if(receivedSignal.toInt()==0 && topSynchro){
+      digitalWrite(0, LOW);
+      topSynchro=false;
+    }
     if(!topSynchro){
       Serial.write(0);
     }
     else{
       Serial.write(1);
     }
-    Serial.write(dataBuffer, bufferIndex); // Ecriture de la trame
-    bufferIndex = 0; // Réinitialiser le buffer après traitement
-  }
+
     
 }

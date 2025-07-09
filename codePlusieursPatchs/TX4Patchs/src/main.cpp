@@ -5,24 +5,25 @@
 /*
 Code de transmission pour le module de communication du pied droit
 La communication se passe de cette manière :
-L'ESP du module de com envoie un "top départ" (un octet spécial) aux 4 patchs à une fréquence précise (ici 250 Hz avec une période de 4000 µs)
+L'ESP du module de com envoie un "top départ" (un octet spécial) aux 4 patchs à une fréquence précise (ici 200 Hz avec une période de 5000 µs)
 A chaque fois que les 4 patchs reçoivent le top départ, ils envoient leurs données en respectant l'ordre patch 1 - 2 - 3 - 4 à l'aide d'un délai appliqué avant la transmission
 Chaque trame est lue, mais l'envoi sans fil en ESP NOW se fait que lorsque les 4 trames des patchs sont reçues et stockées pour éviter de saturer la com ESP NOW tout en respectant
-la fréquence de 250Hz
+la fréquence de 200 Hz
 */
-
 #define DE_RE_PIN 1                                                // GPIO1 pour contrôler DE/RE du transceiver RS485
-uint8_t broadcastAddress[] = {0xDC, 0xDA, 0x0C, 0xA1, 0x95, 0xBC}; // Adresse MAC du récepteur
+uint8_t broadcastAddress[] = {0xB4, 0xE6, 0x2D, 0xB5, 0x9F, 0x85}; // Adresse MAC du récepteur ESP WROOM 32
+//uint8_t broadcastAddress[] = {0xDC, 0xDA, 0x0C, 0xA1, 0x95, 0xBC}; // Adresse MAC du récepteur ESP32C3
+
 unsigned long lastMillisCharge = 0;
 const unsigned long intervalleCharge = 5000;    // intervalle en ms de la vérification du mode recharge (Toutes les 5 secondes, on vérifie si l'ESP est branché au PC)
-const unsigned long intervalleTopDepart = 5000; // intervalle en µs qui correspond à la période entre chaque envoi du top départ qui permet de récupèrer les 4 trames respectives des patchs
+const unsigned long intervalleTopDepart = 4500; // intervalle en µs qui correspond à la période entre chaque envoi du top départ qui permet de récupèrer les 4 trames respectives des patchs
 // 4000 µs => 250 Hz
 
-bool modeRecharge = false; // true si l'ESP est branché au pc, false sinon
 
 bool piedDroit = false; // A CHANGER SELON LA SEMELLE UTILISEE, true => semelle droite, false => semelle gauche.
 
 bool start = false;
+bool modeRecharge = false; // true si l'ESP est branché au pc, false sinon
 
 typedef struct struct_message
 { // Trame unique de 36 octets de data
@@ -31,7 +32,7 @@ typedef struct struct_message
 
 typedef struct struct_combined_message
 {                     // Grande trame combinée de 4 trames (les 4 patchs) pour l'envoi en ESP NOW
-  uint8_t bytes[144]; // 36 octets * 4 trames
+  uint8_t bytes[148]; // 36 octets * 4 trames
 } struct_combined_message;
 
 struct_combined_message combinedData;
@@ -65,7 +66,7 @@ void gestionCharge() // Fonction pour la gestion de la détection d'alimentation
     if (VCC_valueF > 2.5)
     {
       modeRecharge = true; // L'ESP est branché au PC
-      start=false;
+      //start=false;
     }
     else
     {
@@ -78,7 +79,7 @@ void envoiTopDepart() // Fonction pour l'envoi du top départ aux 4 patchs
 {
   static int oldTime = micros();
   int newTime = micros();
-  if (newTime - oldTime >= intervalleTopDepart && !Serial0.available() && !modeRecharge)
+  if (newTime - oldTime >= intervalleTopDepart && !Serial0.available())
   { // Si période de 4000 µs atteinte, liaison RS485 disponible à l'écriture et non mode recharge
     // Envoi du top départ à 250 Hz (période 4000µs)
     oldTime = newTime;
@@ -98,7 +99,7 @@ void envoiTopDepart() // Fonction pour l'envoi du top départ aux 4 patchs
 }
 
 void setup()
-{
+{Serial.begin(115200);
   Serial0.begin(2000000);
   if (piedDroit)
   {
@@ -124,9 +125,14 @@ void setup()
 
 void loop()
 {
-  if (start)
+  static uint32_t tempsDepart=micros();
+
+  if (!start){
+    tempsDepart=micros();
+  }
+  else
   {
-    if (Serial0.available() && !modeRecharge) // Si il y a des données dispo à la lecture et que l'ESP n'est pas branché au PC
+    if (Serial0.available()) // Si il y a des données dispo à la lecture et que l'ESP n'est pas branché au PC
     {                                         // On lit les données et on les stocke
       byte headers[2];                        // Récupère l'entête (2 octets)
       Serial0.readBytes(headers, 2);
@@ -157,8 +163,8 @@ void loop()
       if (trameType != -1)
       {
         byte data[34];
+        uint32_t tempsEcoule=micros()-tempsDepart;
         Serial0.readBytes(data, 34); // Lecture des 34 octets de data après l'entête
-
         // Calculer la position de la trame dans le tableau combiné
         int startPos = trameType * 36;
         combinedData.bytes[startPos] = headers[0]; // Stockage des entêtes
@@ -167,12 +173,17 @@ void loop()
         { // Stockage de la data
           combinedData.bytes[startPos + 2 + i] = data[i];
         }
+        combinedData.bytes[144]=(tempsEcoule>>24)&0xFF;
+        combinedData.bytes[145]=(tempsEcoule>>16)&0xFF;
+        combinedData.bytes[146]=(tempsEcoule>>8)&0xFF;
+        combinedData.bytes[147]=tempsEcoule&0xFF;
+
         trameCount++;
 
         // Envoyer toutes les trames ensemble si toutes ont été reçues
         if (trameCount == 4)
         { // Si les 4 trames des patchs (1, 2, 3 et 4) reçues, alors envoi des 4 trames d'un coup
-          esp_now_send(broadcastAddress, (uint8_t *)&combinedData, 144);
+          esp_now_send(broadcastAddress, (uint8_t *)&combinedData, 148);
           trameCount = 0; // Réinitialiser le compteur après l'envoi
         }
       }
