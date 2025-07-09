@@ -3,7 +3,7 @@ import csv
 import os
 import math
 # Chemin vers le fichier binaire
-file_path = '/home/eplanson/Documents/dataSemelle3.bin' # A adapter
+file_path = '/home/eplanson/Documents/dataSemelle4.bin' # A adapter
 TWO_POWER_65 = 36893488147419103232
 # Ouvrir le fichier en mode binaire et lire son contenu
 with open(file_path, 'rb') as file:
@@ -196,32 +196,32 @@ L=[]
 def decode(lstStart):
     global lastSignalState
     lstEnd=[]
-    ID1=lstStart[1]
-    ID2=lstStart[3]
+    ID1=lstStart[2]
+    ID2=lstStart[4]
     if ID1==1 or ID1==9:
         lastSignalState=lstStart[0]
     signal=lastSignalState
-    CPT=16*(lstStart[4])+(lstStart[5])
-    F1=getForce(get16bits(lstStart,6),ID1,1)
-    F2=getForce(get16bits(lstStart,10),ID1,2)
-    F3=getForce(get16bits(lstStart,14),ID1,3)
-    F4=getForce(get16bits(lstStart,18),ID1,4)
-    accX=get16bits(lstStart,22,False)/4096
-    accY=get16bits(lstStart,26,False)/4096
-    accZ=get16bits(lstStart,30,False)/4096
-    gyX=get16bits(lstStart,34,False)/ 16.384
-    gyY=get16bits(lstStart,38,False)/ 16.384
-    gyZ=get16bits(lstStart,42,False)/ 16.384
-    temp=getTemp(getUint24bits(lstStart,52),ID1)
-    press=getPress(getUint24bits(lstStart,46),temp,ID1)
+    CPT=16*(lstStart[5])+(lstStart[6])
+    F1=getForce(get16bits(lstStart,7),ID1,1) # ATTENTION PIED DROIT 
+    F2=getForce(get16bits(lstStart,11),ID1,2)
+    F3=getForce(get16bits(lstStart,15),ID1,3)
+    F4=getForce(get16bits(lstStart,19),ID1,4)
+    accX=get16bits(lstStart,23,False)/4096
+    accY=get16bits(lstStart,27,False)/4096
+    accZ=get16bits(lstStart,31,False)/4096
+    gyX=get16bits(lstStart,35,False)/ 16.384
+    gyY=get16bits(lstStart,39,False)/ 16.384
+    gyZ=get16bits(lstStart,43,False)/ 16.384
+    temp=getTemp(getUint24bits(lstStart,53),ID1)
+    press=getPress(getUint24bits(lstStart,47),temp,ID1)
 
-    x0 = getUint8bits(lstStart,58)
-    x1 = getUint8bits(lstStart,60)
-    y0 = getUint8bits(lstStart,62)
-    y1 = getUint8bits(lstStart,64)
-    z0 = getUint8bits(lstStart,66)
-    z1 = getUint8bits(lstStart,68)
-    xyz_ext = getUint8bits(lstStart,70)
+    x0 = getUint8bits(lstStart,59)
+    x1 = getUint8bits(lstStart,61)
+    y0 = getUint8bits(lstStart,63)
+    y1 = getUint8bits(lstStart,65)
+    z0 = getUint8bits(lstStart,67)
+    z1 = getUint8bits(lstStart,69)
+    xyz_ext = getUint8bits(lstStart,71)
     x_raw = (x0 * 2**10) | (x1 * 2**2) | ((xyz_ext // 2**6) & 0x03)
     y_raw = (y0 * 2**10) | (y1 * 2**2) | ((xyz_ext // 2**4) & 0x03)
     z_raw = (z0 * 2**10) | (z1 * 2**2) | ((xyz_ext // 2**2) & 0x03)
@@ -253,35 +253,43 @@ def decode(lstStart):
 
 entete=["Signal","ID1","ID2","CPT","F1 (N)","F2 (N)","F3 (N)","F4 (N)","accX (g)","accY (g)","accZ (g)","gyX (°/s)","gyY (°/s)","gyZ (°/s)","Press (Pa)","Temp (°C)","Norme (mT)"]
 L.append(entete)
-for i in range(len(hex_representation)-72):
+for i in range(len(hex_representation)-73):
     for p in range(7):
         if int_list[i]==0 and int_list[i+1]==(2*p+1) and int_list[i+2]==0 and int_list[i+3]==(2*p+2): 
             list=[]
-            for j in range(72): # Pour tous les groupes de 4 bits
-                list.append(int_list[i+j])
+            for j in range(73): # Pour tous les groupes de 4 bits
+                list.append(int_list[i-1+j])
             list=decode(list)
             L.append(list)
     if int_list[i]==0 and int_list[i+1]==15 and int_list[i+2]==1 and int_list[i+3]==0: # On cherche une trame du patch 1
         list=[]
-        for j in range(72): # Pour tous les groupes de 4 bits
-            list.append(int_list[i+j])
+        for j in range(73): # Pour tous les groupes de 4 bits
+            list.append(int_list[i-1+j])
         list=decode(list)
         list[2]=16
         L.append(list)
+    
 
-Lfinal=[]
+Lfinal=[entete]
+
 for i in range(len(L)):
     if i>1:
-        if ((L[i][14]<120000 and L[i][14]>100000 and L[i][15]<40 and L[i][15]>10) or L[i][1]==1) and L[i][16]<300 :
+        if ((L[i][14]<120000 and L[i][14]>100000 and L[i][15]<40 and L[i][15]>10) or L[i][1]==1) and L[i][16]<300 and L[i][16]>10 :
             Lfinal.append(L[i])
-chemin_acces = '/home/eplanson/Documents/decodageOutput.csv'
 
 doublons=[0,0,0,0,0,0,0,0]
 for i in range(1,len(L)-16,8):
     for j in range(8):
         if L[i+j]==L[i+8+j]:
             doublons[j]+=1
+nonrespects=0
+for i in range(1,len(L)-16,4):
+    if L[i][1]==L[i+4][1]:
+            nonrespects+=1
+print(nonrespects)
 print(doublons)
 print(len(L))
 print(len(Lfinal))
+
+chemin_acces = '/home/eplanson/Documents/decodageOutput.csv'
 write_list_of_lists_to_csv(Lfinal , chemin_acces)
