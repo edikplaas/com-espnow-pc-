@@ -27,21 +27,25 @@ def write_list_of_lists_to_csv(list_of_lists, filepath): # Sert à convertir une
         for sublist in list_of_lists:
             writer.writerow(sublist)
 
-def getUint8bits(lst,indice):
+def getUint8bits(lst,indice): # Sert à récupérer un entier non signé établi sur 2 octets
     nb = 2**4*lst[indice]+lst[indice+1]
     return nb
-def get16bits(lst,indice,uint = True):
+
+def get16bits(lst,indice,uint = True): # Sert à récupérer un entier signé établi sur 4 octets
     nb = 2**12*lst[indice]+2**8*lst[indice+1]+2**4*lst[indice+2]+lst[indice+3]
     if uint == False and nb>32767:
         nb=nb-65536
     return nb
-def getUint24bits(lst,indice):
+
+def getUint24bits(lst,indice): # Sert à récupérer un entier non signé établi sur 3 octets
     nb = 2**20*lst[indice]+2**16*lst[indice+1]+2**12*lst[indice+2]+2**8*lst[indice+3]+2**4*lst[indice+4]+lst[indice+5]
     return nb
-def getUint32bits(lst,indice):
+
+def getUint32bits(lst,indice): # Sert à récupérer un entier non signé établi sur 4 octets
     nb = 2**28*lst[indice]+2**24*lst[indice+1]+2**20*lst[indice+2]+2**16*lst[indice+3]+2**12*lst[indice+4]+2**8*lst[indice+5]+2**4*lst[indice+6]+lst[indice+7]
     return nb
-def getForce(forceBrute,ID,numero):
+
+def getForce(forceBrute,ID,numero): # Sert à récupérer la force en newtons à partir d'une donnée brute
     global maxForce
     if ID==1 or ID>=9:
         range=100
@@ -60,7 +64,8 @@ def getForce(forceBrute,ID,numero):
     if (ID==7 or ID==15) and numero == 1:
         force=0
     return force
-def getTemp(rawTemp,ID):
+
+def getTemp(rawTemp,ID): # Sert à récupérer la température réelle à partir d'une température brute et de coefficients
     NVM_PAR_T3=-12
     if ID==1:
         NVM_PAR_T1= 27590
@@ -94,7 +99,8 @@ def getTemp(rawTemp,ID):
     partial_data2_temp = partial_data1_temp * PAR_T2
     temp = partial_data2_temp + (partial_data1_temp * partial_data1_temp) * PAR_T3
     return temp
-def getPress(rawPress,temp,ID):
+
+def getPress(rawPress,temp,ID):# Sert à récupérer la pression atmosphérique réelle à partir d'une pression brute et de coefficients
     NVM_PAR_P1 = 230
     NVM_PAR_P2 = -1962
     NVM_PAR_P5 = 25549
@@ -190,7 +196,6 @@ def getPress(rawPress,temp,ID):
     press = partial_out1 + partial_out2 + partial_data4
     return press
     
-L=[]
 def decode(lstStart):
     global lastSignalState
     lstEnd=[]
@@ -254,18 +259,6 @@ def decode(lstStart):
     lstEnd.append(temps)
     return lstEnd
 
-entete=["Signal","ID1","ID2","CPT","F1 (N)","F2 (N)","F3 (N)","F4 (N)","accX (g)","accY (g)","accZ (g)","gyX (°/s)","gyY (°/s)","gyZ (°/s)","Press (Pa)","Temp (°C)","Norme (mT)","Temps"]
-L.append(entete)
-identifiants = [
-    [0, 1, 0, 2],
-    [0, 3, 0, 4],
-    [0, 5, 0, 6],
-    [0, 7, 0, 8],
-    [0, 9, 0, 10],
-    [0, 11, 0, 12],
-    [0, 13, 0, 14],
-    [0,15,1,0]
-]
 def recognize(list,ind): # fonction pour détecter si la trame est bonne ou non
     num=list[ind+1]
     if [int_list[i],int_list[i+1],int_list[i+2],int_list[i+3]] in identifiants:
@@ -275,6 +268,20 @@ def recognize(list,ind): # fonction pour détecter si la trame est bonne ou non
             return True
     else:
         return False
+
+entete=["Signal","ID1","ID2","CPT","F1 (N)","F2 (N)","F3 (N)","F4 (N)","accX (g)","accY (g)","accZ (g)","gyX (°/s)","gyY (°/s)","gyZ (°/s)","Press (Pa)","Temp (°C)","Norme (mT)","Temps"]
+L=[entete]
+# Tous les identifiants possibles en début de trame 
+identifiants = [ 
+    [0, 1, 0, 2],
+    [0, 3, 0, 4],
+    [0, 5, 0, 6],
+    [0, 7, 0, 8],
+    [0, 9, 0, 10],
+    [0, 11, 0, 12],
+    [0, 13, 0, 14],
+    [0,15,1,0]
+]
 
 for i in range(len(hex_representation)-81):
     if recognize(int_list,i) == True:
