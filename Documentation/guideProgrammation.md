@@ -37,6 +37,7 @@ lecture4Patchs : Code de debug pour le module de com, lecture des données de to
 TX4Patchs : Code pour les 2 modules de com, paramétrable selon la semelle utilisée  
 RX4Patchs : Code pour l'ESP32 de réception branché au PC, réception puis écriture des données sur le port série  
 TX_ESPNOW_vide : Code paramétrable pour les 2 modules de com, transmission de données sans semelle connectée, sert à tester la synchro des 2 semelles depuis l'ESP32 de réception.  
+getMACaddress : Programme pour récupèrer l'adresse MAC d'un ESP32
 decodage.py : Fichier python de traitement de données, sert surtout à compter les trames pour mesurer le taux d'erreur  
 decodageToCSV.py : Fichier python de traitement de données, sert à mettre en forme les données, les convertir, pour les mettre dans un fichier Excel  
 envoiKeyboard.py : Fichier python d'envoi du signal de synchronisation à l'ESP32 de réception pendant l'écriture des données.  
@@ -57,6 +58,12 @@ Dans le fichier `platformio.ini`, décommentez/commentez ce qu'il vous faut :
 platform = https://github.com/pioarduino/platform-espressif32/releases/download/stable/platform-espressif32.zip
 framework = arduino
 board = seeed_xiao_esp32c6
+
+; POUR ESP WROOM 32
+;[env:nodemcu-32s]
+;platform = espressif32
+;board = nodemcu-32s
+;framework = arduino
 ```
 En installant PlatformIO, l'ESP32C3 est directement disponible mais pas l'ESP32C6, c'est pour ça qu'il est important de le préciser dans le fichier avec le lien GitHub.
 
