@@ -16,9 +16,7 @@ uint8_t broadcastAddress[] = {0xB4, 0xE6, 0x2D, 0xB5, 0x9F, 0x85}; // Adresse MA
 
 unsigned long lastMillisCharge = 0;
 const unsigned long intervalleCharge = 5000;    // intervalle en ms de la vérification du mode recharge (Toutes les 5 secondes, on vérifie si l'ESP est branché au PC)
-const unsigned long intervalleTopDepart = 4500; // intervalle en µs qui correspond à la période entre chaque envoi du top départ qui permet de récupèrer les 4 trames respectives des patchs
-// 4000 µs => 250 Hz
-
+const unsigned long intervalleTopDepart = 5000; // intervalle en µs qui correspond à la période entre chaque envoi du top départ qui permet de récupèrer les 4 trames respectives des patchs
 
 bool piedDroit = false; // A CHANGER SELON LA SEMELLE UTILISEE, true => semelle droite, false => semelle gauche.
 

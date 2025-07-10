@@ -1,9 +1,10 @@
+#!/usr/bin/env python3
 import csv
 import os
 import math
 import struct
-# Chemin vers le fichier binaire
-file_path = '/home/eplanson/Documents/dataSemelle4.bin' # A adapter
+import argparse
+
 lastSignalState=0
 
 # Tous les identifiants possibles en début de trame 
@@ -15,7 +16,7 @@ identifiantsDeTrame = [
     [9,10],
     [11,12],
     [13,14],
-    [15,1]
+    [15,16]
 ]
 identifiantsDeTrame=[bytes(id) for id in identifiantsDeTrame] # Adaptation des identifiants pour les octets fournis par le unpack de struct
 
@@ -27,13 +28,12 @@ coeffsConversion = {
     "f_xyz": 0.00625
 }
 
-# Ouvrir le fichier en mode binaire et lire son contenu
-with open(file_path, 'rb') as file:
-    data_bytes = bytes(list(file.read()))
+def write_csv(list_of_lists, filepath):
+    # Vérifiez si le chemin contient un répertoire
+    directory = os.path.dirname(filepath)
+    if directory:  # Si un répertoire est spécifié
+        os.makedirs(directory, exist_ok=True)
 
-def write_csv(list_of_lists, filepath): # Sert à convertir une liste de listes en une feuille CSV consultable
-    # Assurez-vous que le répertoire existe
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
     # Ouvrir le fichier CSV en mode écriture
     with open(filepath, mode='w', newline='') as file:
         writer = csv.writer(file)
@@ -93,30 +93,34 @@ def decode(frame): # Fonction de décodage de trame
     return decodedFrame
 
 def recognize(list,ind): # fonction pour détecter si la trame est bonne ou non
-    ID1=list[ind]
-    if list[ind:ind+2] in identifiantsDeTrame :
-        if (ID1==7 or ID1==15) and list[ind+41:ind+43] in identifiantsDeTrame:
+    ID1=list[ind] # Récupération de la première partie de l'identifiant
+    if list[ind:ind+2] in identifiantsDeTrame : # Si la paire d'identifiants est reconnue
+        if (ID1==7 or ID1==15) and list[ind+41:ind+43] in identifiantsDeTrame: # On vérifie la paire d'identifiants suivante (si le patch en lecture est celui des orteils)
             return True
-        elif (ID1!=7 and ID1!=15) and list[ind+36:ind+38] in identifiantsDeTrame:
+        elif (ID1!=7 and ID1!=15) and list[ind+36:ind+38] in identifiantsDeTrame: # On vérifie la paire d'identifiants suivantes (si le patch en lecture n'est pas celui des orteils)
             return True
     return False
 
 def get_converted_data(liste):
     entete=["Signal","ID1","ID2","CPT","F1 (N)","F2 (N)","F3 (N)","F4 (N)","accX (g)","accY (g)","accZ (g)","gyX (°/s)","gyY (°/s)","gyZ (°/s)","Press brute","Temp brute","Norme (mT)","Temps"]
     L=[entete]
-    for i in range(len(liste)-41): # Parcours des données
+    for i in range(len(liste)-41): # Parcours des données (41 octets)
         if recognize(liste,i)==True: # Si identifiant de trame identifié et trame valable (par consultation de l'identifiant de la trame suivante), alors 
             list=[]
-            for j in range(41):
+            for j in range(41): # Pour les 41 octets de la trame
                 list.append(liste[i-1+j]) # Récupération des données de la trame
             list=decode(list) # Conversion des données
-            if liste[i]==15: 
-                list[2]=16 # Affichage correct du tout dernier identifiant 16 (car précédemment 16 était reconnu comme 0x10)
             L.append(list) # Ajout de la trame adaptée dans la liste finale
             i+=36 # Saut d'une trame entière, temps gagné
     return L
-L=get_converted_data(data_bytes)
-print(len(L)) # Pour vérifier le nombre de trames obtenues
-chemin_acces = '/home/eplanson/Documents/decodageOutput.csv' # A adapter à vos besoins
-write_csv(L , chemin_acces) 
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Conversion des données des semelles depuis un fichier binaire en une feuille CSV de données physiques consultable')
+    parser.add_argument('input_file', type=str, help='Le fichier binaire .bin en entrée')
+    parser.add_argument('output_file', type=str, help='Le fichier .csv en sortie')
+    args = parser.parse_args()
+    with open(args.input_file, 'rb') as file:
+        data_bytes = bytes(list(file.read()))
+    conv_data = get_converted_data(data_bytes)
+    print("Nombre de trames converties : ",len(conv_data))
+    write_csv(conv_data, args.output_file)
