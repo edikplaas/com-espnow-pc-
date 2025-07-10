@@ -40,7 +40,8 @@ TX_ESPNOW_vide : Code paramétrable pour les 2 modules de com, transmission de d
 decodage.py : Fichier python de traitement de données, sert surtout à compter les trames pour mesurer le taux d'erreur  
 decodageToCSV.py : Fichier python de traitement de données, sert à mettre en forme les données, les convertir, pour les mettre dans un fichier Excel  
 envoiKeyboard.py : Fichier python d'envoi du signal de synchronisation à l'ESP32 de réception pendant l'écriture des données.  
-
+fonctionsBarometreConversion.py : Fichier python avec les fonctions de conversion des températures et pressions brutes des baromètres, avec les coefficients intégrés 
+   
 ## Attention 
 Si vous devez à un moment changer l'ESP32, en un modèle différent tel que du l'ESP32C3 à l'ESP32C6 ou inversement, il est important de le préciser dans le fichier `platformio.ini` dans le dossier du projet en cours.  
 Dans le fichier `platformio.ini`, décommentez/commentez ce qu'il vous faut :    
