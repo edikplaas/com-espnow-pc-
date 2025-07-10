@@ -7,9 +7,9 @@
 
 // Définition du buffer et des variables associées
 #define BUFFER_SIZE 2960 // Taille arbitraire et ajustable
-const int pin = 0;
+const int PIN = 2;
 uint8_t dataBuffer[BUFFER_SIZE];
-uint8_t broadcastAddressLeft[] = {0x8C, 0xBF, 0xEA, 0xCC, 0x9C, 0x04};  // Adresse MAC du récepteur
+uint8_t broadcastAddressLeft[] = {0x8C, 0xBF, 0xEA, 0xCC, 0x9C, 0x04}; // Adresse MAC du récepteur
 uint8_t broadcastAddressRight[] = {0x8C, 0xBF, 0xEA, 0xCC, 0xA8, 0xDC}; // Adresse MAC du récepteur
 
 size_t bufferIndexGauche = 0;
@@ -27,25 +27,26 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 
 void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
 {
-  // Ajout des données reçues au buffer
-  if (bufferIndex + len <= BUFFER_SIZE)
-  {
-    memcpy(&dataBuffer[bufferIndex], incomingData, len);
-    bufferIndex += len;
-  }
-  else
-  {
-    // Gérer le débordement de buffer ici (par exemple, vider le buffer ou signaler une erreur)
-    bufferIndex = 0; // Réinitialiser le buffer en cas de débordement
-  }
+      // Ajout des données reçues au buffer
+    if (bufferIndex + len <= BUFFER_SIZE)
+    {
+      memcpy(&dataBuffer[bufferIndex], incomingData, len);
+      bufferIndex += len;
+    }
+    else
+    {
+      // Gérer le débordement de buffer ici (par exemple, vider le buffer ou signaler une erreur)
+      bufferIndex = 0; // Réinitialiser le buffer en cas de débordement
+    }
+    
 }
 
 void setup()
 {
-  Serial.begin(2000000); // Pour ESP32C3/C6
-  // Serial.begin(921600) // Pour ESP WROOM 32
-  pinMode(pin, OUTPUT);
-  digitalWrite(pin, LOW);
+  // Serial.begin(2000000); // Pour l'ESP32C3/C6
+  Serial.begin(921600); // Pour l'ESP WROOM 32
+  pinMode(PIN, OUTPUT);
+  digitalWrite(PIN, LOW);
   WiFi.mode(WIFI_STA);
   if (esp_now_init() != ESP_OK)
   {
@@ -70,9 +71,10 @@ void setup()
   }
   delay(5000);
   uint8_t data[1];
-  data[0] = 100;
+  data[0]=100;
   esp_now_send(broadcastAddressLeft, (uint8_t *)&data, 1);
   esp_now_send(broadcastAddressRight, (uint8_t *)&data, 1);
+
 }
 
 void loop()
@@ -84,25 +86,22 @@ void loop()
     {
       receivedSignal = Serial.readStringUntil('\n'); // Lecture jusqu'à fin de ligne
     }
-    if (receivedSignal.toInt() == 1 && !topSynchro)
-    {
-      digitalWrite(pin, HIGH);
-      topSynchro = true;
+    if(receivedSignal.toInt()==1 && !topSynchro){
+      digitalWrite(PIN, HIGH);
+      topSynchro=true;
     }
-    if (receivedSignal.toInt() == 0 && topSynchro)
-    {
-      digitalWrite(pin, LOW);
-      topSynchro = false;
+    if(receivedSignal.toInt()==0 && topSynchro){
+      digitalWrite(PIN, LOW);
+      topSynchro=false;
     }
-    if (!topSynchro)
-    {
-      Serial.write(pin);
+    if(!topSynchro){
+      Serial.write(0);
     }
-    else
-    {
-      Serial.write(pin);
+    else{
+      Serial.write(1);
     }
     Serial.write(dataBuffer, bufferIndex); // Ecriture de la trame
-    bufferIndex = 0;                       // Réinitialiser le buffer après traitement
+    bufferIndex = 0; // Réinitialiser le buffer après traitement
   }
+    
 }

@@ -40,7 +40,7 @@ TX_ESPNOW_vide : Code paramétrable pour les 2 modules de com, transmission de d
 getMACaddress : Programme pour récupèrer l'adresse MAC d'un ESP32
 decodage.py : Fichier python de traitement de données, sert surtout à compter les trames pour mesurer le taux d'erreur  
 decodageToCSV.py : Fichier python de traitement de données, sert à mettre en forme les données, les convertir, pour les mettre dans un fichier Excel  
-envoiKeyboard.py : Fichier python d'envoi du signal de synchronisation à l'ESP32 de réception pendant l'écriture des données.  
+envoiKeyboard.py : Fichier python d'envoi du signal de synchronisation à l'ESP32 de réception pendant l'écriture des données.  A ne pas executer dans le terminal
 fonctionsBarometreConversion.py : Fichier python avec les fonctions de conversion des températures et pressions brutes des baromètres, avec les coefficients intégrés 
    
 ## Attention 
