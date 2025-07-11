@@ -104,7 +104,7 @@ void read_send_data() {
   uint8_t z1 = readRegister(0x05);
   uint8_t xyz_ext = readRegister(0x06);
   if (piedDroit == 1) {
-    switch (patch) {
+    switch (patch) { // La récupération des forces est différente pour chaque patch
       case 1:
         frame[3] = (force_3 >> 8) & 0xFF; // Décomposition des octets
         frame[4] = force_3 & 0xFF;
@@ -147,7 +147,7 @@ void read_send_data() {
     }
   }
   else if (piedDroit == 0) {
-    switch (patch) {
+    switch (patch) { // La récupération des forces est différente pour chaque patch
       case 1:
         frame[3] = (force_1 >> 8) & 0xFF; // Décomposition des octets
         frame[4] = force_1 & 0xFF;
