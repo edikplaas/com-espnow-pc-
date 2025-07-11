@@ -42,23 +42,24 @@ def write_csv(list_of_lists, filepath):
             writer.writerow(sublist)
 
 def getForce(forceBrute,ID,numero): # Sert à récupérer la force en newtons à partir d'une donnée brute
+    # Fonction très customisée, s'adapte par rapport aux capteurs utilisés sur les semelles (mélange de capteurs, surtout sur la semelle gauche)
     global maxForce
-    if ID==1 or ID>=9:
-        range=100
-    elif ID==3 or ID==7:
-        range=50
-    elif ID==5:
-        if numero==4:
-            range=100
-        else:
-            range=50
+    if ID==1 or ID>=9: # Si c'est le patch du talon gauche ou alors toute la semelle droite, alors
+        range=100 # Capteur dont le poids max admissible est 100 livres.
+    elif ID==3 or ID==7: # Si patch 2 gauche ou patch 4 gauche, amprs
+        range=50# Capteur dont le poids max admissible est 50 livres.
+    elif ID==5: # Si patch 3 gauche
+        if numero==4: # Si capteur numéro 4 (en bas à droite du patch)
+            range=100 # Capteur dont le poids max admissible est 100 livres.
+        else: 
+            range=50 # Capteur dont le poids max admissible est 50 livres.
     else:
         range=0
     force = 4.44822*((forceBrute-1000)*(range/14000)/100)*range
     if force>range*4.44822:
         force=0
-    if (ID==7 or ID==15) and numero == 1:
-        force=0
+    if (ID==7 or ID==15) and numero == 1: # Si capteur des orteils manquant (car il n'y a que 3 capteurs)
+        force=0 # Force nulle car pas de capteur
     return force
 
 def decode(frame): # Fonction de décodage de trame
@@ -122,5 +123,5 @@ if __name__ == "__main__":
     with open(args.input_file, 'rb') as file:
         data_bytes = bytes(list(file.read()))
     conv_data = get_converted_data(data_bytes)
-    print("Nombre de trames converties : ",len(conv_data))
+    print("Nombre de trames converties : ",len(conv_data)) 
     write_csv(conv_data, args.output_file)
