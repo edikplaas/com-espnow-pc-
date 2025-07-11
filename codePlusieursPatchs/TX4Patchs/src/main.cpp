@@ -77,7 +77,7 @@ void envoiTopDepart() // Fonction pour l'envoi du top départ aux 4 patchs
 {
   static int oldTime = micros();
   int newTime = micros();
-  if (newTime - oldTime >= intervalleTopDepart && !Serial0.available())
+  if (newTime - oldTime >= intervalleTopDepart && !Serial0.available() && !modeRecharge)
   { // Si période de 4000 µs atteinte, liaison RS485 disponible à l'écriture et non mode recharge
     // Envoi du top départ à 250 Hz (période 4000µs)
     oldTime = newTime;
@@ -130,7 +130,7 @@ void loop()
   }
   else
   {
-    if (Serial0.available()) // Si il y a des données dispo à la lecture et que l'ESP n'est pas branché au PC
+    if (Serial0.available() && !modeRecharge) // Si il y a des données dispo à la lecture et que l'ESP n'est pas branché au PC
     {                                         // On lit les données et on les stocke
       byte headers[2];                        // Récupère l'entête (2 octets)
       Serial0.readBytes(headers, 2);
