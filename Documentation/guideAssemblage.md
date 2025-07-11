@@ -1,5 +1,7 @@
-Ceci est le guide pour mener à bien l'assemblage des semelles instrumentées
-
+Ceci est le guide pour mener à bien l'assemblage des semelles instrumentées  
+  
+Voir photos de l'assemblage dans le dossier `Assemblage`  
+  
 Matériel utilisé : adhésif fin double face, fer à souder, ciseaux / cutter, flux pour la soudure, silicone en tube, objet fin (stylo).  
 
 L'assemblage se fait dans l'ordre suivant : Fixation des taquets, soudure puis fixation des capteurs de force, soudure des patchs entre eux, pose du silicone, insertion de la semelle électronique dans la coque flexible, insertion des plaques d'appui.  
@@ -35,3 +37,19 @@ Surtout prendre son temps.
 Préinsérez les plaques en les glissant sous les bords.  
 Aidez-vous d'un objet fin comme un stylo pour élargir les bords de la coque et insérez les plaques.  
     
+## Description des photos
+1. Photo `1` : Taquets déjà fixés, capteurs soudés  
+2. Photo `2` : Fixation des capteurs avec de l'adhésif double face  
+3. Photo `3` : Capteurs fixés  
+4. Photo `4` : Préparation des fils pour la soudure des patchs  
+5. Photo `5` : Longueur des fils à couper  
+6. Photo `6` : Soudure inter-patch réalisée pour un patch  
+7. Photo `7` : Soudure inter-patch réalisée pour toute la semelle  
+8. Photo `8` : Préparation de l'insertion de la semelle électronique  
+9. Photo `9` : Insertion de la semelle électronique dans la coque flexible  
+10. Photo `10` : Comparaison avec semelle terminée  
+11. Photo `11` : Pose du silicone  
+12. Photo `12` : Semelle assemblée avec les plaques  
+
+
+

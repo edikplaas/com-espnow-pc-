@@ -1,4 +1,4 @@
-Ceci est le guide qui explique l'acquisition des données de la semelle
+Ceci est le guide qui explique l'acquisition des données d'une ou plusieurs semelles
   
 ## Etapes
   
@@ -25,3 +25,8 @@ L'appel possède des arguments : input_file et output_file qui correspondent au 
 Exemple d'appel : `python3 decodageToCSV.py dataSemelleEXEMPLE.bin feuilleOutputEXEMPLE.csv`  
 Faites attention au chemin du fichier, dans l'exemple le fichier d'entrée est situé dans le même dossier que le programme python, et le fichier de sortie est créé dans le même dossier.  
 
+## Bugs
+  
+Si jamais l'acquisition des données ne se fait pas, vérifiez le baud rate utilisé en consultant le programme `RX4Patchs`, vous pouvez également vérifier le niveau de charge des batteries.  
+Si des pauses apparaissent dans l'acquisition des données, baissez la fréquence.  
+Si des trames n'apparaissent finalement pas dans la feuille .CSV finale (par exemple les orteils gauche), c'est peut être qu'un patch s'est déssoudé.  
